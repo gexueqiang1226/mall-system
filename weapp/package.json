@@ -1,0 +1,40 @@
+{
+  "name": "mall-weapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-platform mini app for mall system",
+  "main": "index.js",
+  "scripts": {
+    "build:weapp": "taro build --type weapp",
+    "build:alipay": "taro build --type alipay",
+    "build:tt": "taro build --type tt",
+    "build:h5": "taro build --type h5",
+    "dev:weapp": "taro build --type weapp --watch",
+    "dev:alipay": "taro build --type alipay --watch",
+    "dev:tt": "taro build --type tt --watch",
+    "dev:h5": "taro build --type h5 --watch"
+  },
+  "browserslist": [
+    "last 3 versions",
+    "> 1%",
+    "ie >= 9"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@tarojs/components": "3.6.15",
+    "@tarojs/taro": "3.6.15",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@tarojs/cli": "3.6.15",
+    "@tarojs/plugin-framework-react": "3.6.15",
+    "@types/react": "^18.2.37",
+    "@types/webpack-env": "^1.16.3",
+    "babel-preset-taro": "3.6.15",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.2.2"
+  }
+}
