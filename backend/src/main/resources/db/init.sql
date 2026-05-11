@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS mall_admin (
 
 -- 初始化数据
 INSERT INTO mall_admin (username, password, real_name, email, role) VALUES
-('admin', '$2a$10$EixZaYVK1fsbw1ZfbX3OzeIvxwYjL2M593sFXUVxmRJ7of40P1jey', '超级管理员', 'admin@mall.com', 'super_admin');
+('admin', '$2a$10$SIzITvjVk7nCqQeu6zbc5.ayc0zmjT08Bmylt6rUNq8Yb0rMscXPa', '超级管理员', 'admin@mall.com', 'super_admin');
 
 INSERT INTO mall_category (category_name, parent_id, sort_order) VALUES
 ('电子产品', 0, 1),

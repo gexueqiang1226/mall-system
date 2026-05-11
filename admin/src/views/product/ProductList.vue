@@ -4,7 +4,7 @@
       <div class="toolbar" style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
         <el-input v-model="keyword" placeholder="搜索商品名称或编码" clearable @clear="onSearch" style="width:300px">
           <template #append>
-            <el-button icon="el-icon-search" @click="onSearch"></el-button>
+            <el-button @click="onSearch">搜索</el-button>
           </template>
         </el-input>
 
@@ -15,41 +15,58 @@
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column label="主图" width="100">
           <template #default="{ row }">
-            <img :src="row.mainImage" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:4px" />
+            <img v-if="row.mainImage" :src="row.mainImage" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:4px" />
+            <span v-else style="color:#999">暂无</span>
           </template>
         </el-table-column>
-        <el-table-column prop="productName" label="名称"/>
-        <el-table-column prop="productCode" label="编码" width="140"/>
+        <el-table-column prop="productName" label="名称" />
+        <el-table-column prop="productCode" label="编码" width="140" />
         <el-table-column prop="salePrice" label="价格" width="120">
-          <template #default="{ row }">¥{{ row.salePrice }}</template>
+          <template #default="{ row }">&yen;{{ row.salePrice }}</template>
         </el-table-column>
-        <el-table-column prop="sellableStock" label="可售库存" width="120"/>
+        <el-table-column prop="sellableStock" label="可售库存" width="120" />
         <el-table-column prop="isOnline" label="上架" width="100">
-          <template #default="{ row }">{{ row.isOnline === 1 ? '已上架' : '已下架' }}</template>
+          <template #default="{ row }">
+            <el-tag :type="row.isOnline === 1 ? 'success' : 'info'">
+              {{ row.isOnline === 1 ? '已上架' : '已下架' }}
+            </el-tag>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="320">
           <template #default="{ row }">
-            <el-button size="mini" @click="onEdit(row)">编辑</el-button>
-            <el-button size="mini" type="success" v-if="row.isOnline !== 1" @click="onOnline(row)">上架</el-button>
-            <el-button size="mini" type="warning" v-else @click="onOffline(row)">下架</el-button>
-            <el-button size="mini" @click="openInventory(row)">库存</el-button>
+            <el-button size="small" @click="onEdit(row)">编辑</el-button>
+            <el-button size="small" type="success" v-if="row.isOnline !== 1" @click="onOnline(row)">上架</el-button>
+            <el-button size="small" type="warning" v-else @click="onOffline(row)">下架</el-button>
+            <el-button size="small" @click="openInventory(row)">库存</el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <pagination :total="total" :page.sync="page" :size.sync="size" @change="fetch" />
+      <el-pagination
+        style="margin-top: 16px; text-align: right"
+        :current-page="page"
+        :page-size="size"
+        :total="total"
+        @current-change="onPageChange"
+        layout="prev, pager, next, total"
+      />
     </el-card>
 
-    <el-dialog title="库存配置" :visible.sync="inventoryDialog.visible">
-      <inventory-config v-if="inventoryDialog.product" :product="inventoryDialog.product" @ok="onInventoryOk" />
+    <el-dialog v-model="inventoryDialog.visible" title="库存配置" width="500px" @close="onInventoryClose">
+      <inventory-config
+        v-if="inventoryDialog.product"
+        :product="inventoryDialog.product"
+        @ok="onInventoryOk"
+        @cancel="onInventoryClose"
+      />
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import * as productApi from '@/api/product'
-import Pagination from '@/components/Pagination.vue'
 import InventoryConfig from '@/views/product/InventoryConfig.vue'
 
 const products = ref<Array<any>>([])
@@ -63,13 +80,18 @@ const inventoryDialog = ref({ visible: false, product: null as any })
 const fetch = async () => {
   const res = await productApi.listProducts({ page: page.value, size: size.value, keyword: keyword.value })
   const data = res.data
-  products.value = data.data.items
-  total.value = data.data.total
+  products.value = data.items || data.records || []
+  total.value = data.total || 0
 }
 
 onMounted(() => {
   fetch()
 })
+
+const onPageChange = (p: number) => {
+  page.value = p
+  fetch()
+}
 
 const onSearch = () => {
   page.value = 1
@@ -77,7 +99,6 @@ const onSearch = () => {
 }
 
 const onCreate = () => {
-  // navigate to edit page without id
   window.location.href = '/#/product/create'
 }
 
@@ -86,12 +107,16 @@ const onEdit = (row: any) => {
 }
 
 const onOnline = async (row: any) => {
+  await ElMessageBox.confirm(`确认上架商品「${row.productName}」？`, '提示')
   await productApi.onlineProduct(row.id)
+  ElMessage.success('上架成功')
   fetch()
 }
 
 const onOffline = async (row: any) => {
+  await ElMessageBox.confirm(`确认下架商品「${row.productName}」？`, '提示')
   await productApi.offlineProduct(row.id)
+  ElMessage.success('下架成功')
   fetch()
 }
 
@@ -100,10 +125,15 @@ const openInventory = (row: any) => {
   inventoryDialog.value.visible = true
 }
 
-const onInventoryOk = async (payload: any) => {
+const onInventoryOk = async () => {
   inventoryDialog.value.visible = false
-  // payload should contain productId and data
+  ElMessage.success('库存更新成功')
   await fetch()
+}
+
+const onInventoryClose = () => {
+  inventoryDialog.value.visible = false
+  inventoryDialog.value.product = null
 }
 </script>
 

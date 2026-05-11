@@ -22,6 +22,39 @@ public class ProductController {
     @Autowired
     private InventoryService inventoryService;
 
+    // Admin - 商品列表
+    @GetMapping("/admin/api/products")
+    public ResponseResult adminListProducts(@RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "20") int size,
+                                             @RequestParam(required = false) Integer isOnline,
+                                             @RequestParam(required = false) Long categoryId,
+                                             @RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) String sortBy,
+                                             @RequestParam(required = false) String order) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("isOnline", isOnline);
+        params.put("categoryId", categoryId);
+        params.put("keyword", keyword);
+        if (sortBy != null) params.put("sortBy", sortBy);
+        if (order != null) params.put("order", order);
+
+        Page<Product> pager = productService.listProducts(page, size, params);
+        Map<String, Object> data = new HashMap<>();
+        data.put("items", pager.getRecords());
+        data.put("total", pager.getTotal());
+        data.put("page", page);
+        data.put("size", size);
+        return ResponseResult.success(data);
+    }
+
+    // Admin - 商品详情
+    @GetMapping("/admin/api/products/{id}")
+    public ResponseResult adminGetProduct(@PathVariable Long id) {
+        Product p = productService.getById(id);
+        if (p == null) return ResponseResult.fail(404, "商品不存在");
+        return ResponseResult.success(p);
+    }
+
     // Public API - 商品列表
     @GetMapping("/api/products")
     public ResponseResult listProducts(@RequestParam(defaultValue = "1") int page,

@@ -6,6 +6,7 @@ export default definePageConfig({
     'pages/cart/index',
     'pages/order/list/index',
     'pages/order/detail/index',
+    'pages/order/myorders/index',
     'pages/user/index',
   ],
   window: {
