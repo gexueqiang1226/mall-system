@@ -16,6 +16,9 @@ export default {
     options: {}
   },
   framework: 'react',
+  alias: {
+    '@': require('path').resolve(__dirname, '..', 'src')
+  },
   compiler: {
     type: 'webpack5',
     prebundle: {
@@ -46,6 +49,9 @@ export default {
   h5: {
     publicPath: '/',
     staticDirectory: 'static',
+    router: {
+      mode: 'hash'
+    },
     postcss: {
       autoprefixer: {
         enable: true,

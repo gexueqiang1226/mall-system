@@ -150,8 +150,10 @@ INSERT INTO mall_category (category_name, parent_id, sort_order) VALUES
 -- 初始化示例商品
 INSERT INTO mall_product (
     product_name, product_code, category_id, sale_price, cost_price, total_stock,
-    sellable_stock, is_online, status, description
+    sellable_stock, is_online, status, description, main_image, detail_images
 ) VALUES
-('iPhone 15 Pro Max', 'SKU-001', 1, 9999.00, 5000.00, 100, 100, 1, 2, 'Apple 最新旗舰机'),
-('MacBook Pro M3', 'SKU-002', 1, 12999.00, 6500.00, 50, 50, 1, 2, '专业级笔记本电脑'),
-('Samsung Galaxy S24', 'SKU-003', 1, 6999.00, 3500.00, 80, 80, 1, 2, '安卓旗舰手机');
+('iPhone 15 Pro Max', 'SKU-001', 1, 9999.00, 5000.00, 100, 100, 1, 2, 'Apple 最新旗舰机', 'https://picsum.photos/400/400?random=1', '["https://picsum.photos/400/400?random=11","https://picsum.photos/400/400?random=12"]'),
+('MacBook Pro M3', 'SKU-002', 1, 12999.00, 6500.00, 50, 50, 1, 2, '专业级笔记本电脑', 'https://picsum.photos/400/400?random=2', '["https://picsum.photos/400/400?random=21","https://picsum.photos/400/400?random=22"]'),
+('Samsung Galaxy S24', 'SKU-003', 1, 6999.00, 3500.00, 80, 80, 1, 2, '安卓旗舰手机', 'https://picsum.photos/400/400?random=3', '["https://picsum.photos/400/400?random=31","https://picsum.photos/400/400?random=32"]'),
+('Nike Air Max', 'SKU-004', 2, 899.00, 450.00, 200, 200, 1, 2, '经典运动鞋', 'https://picsum.photos/400/400?random=4', '["https://picsum.photos/400/400?random=41","https://picsum.photos/400/400?random=42"]'),
+('SK-II 神仙水', 'SKU-005', 3, 1599.00, 800.00, 150, 150, 1, 2, '护肤精华', 'https://picsum.photos/400/400?random=5', '["https://picsum.photos/400/400?random=51","https://picsum.photos/400/400?random=52"]');
