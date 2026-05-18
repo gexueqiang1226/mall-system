@@ -42,9 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/admin/api/**").authenticated()
-                        .requestMatchers("/api/orders/**").authenticated()
-                        .requestMatchers("/api/payments/**").authenticated()
+                        .requestMatchers("/admin/api/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

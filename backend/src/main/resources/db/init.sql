@@ -157,3 +157,101 @@ INSERT INTO mall_product (
 ('Samsung Galaxy S24', 'SKU-003', 1, 6999.00, 3500.00, 80, 80, 1, 2, '安卓旗舰手机', 'https://picsum.photos/400/400?random=3', '["https://picsum.photos/400/400?random=31","https://picsum.photos/400/400?random=32"]'),
 ('Nike Air Max', 'SKU-004', 2, 899.00, 450.00, 200, 200, 1, 2, '经典运动鞋', 'https://picsum.photos/400/400?random=4', '["https://picsum.photos/400/400?random=41","https://picsum.photos/400/400?random=42"]'),
 ('SK-II 神仙水', 'SKU-005', 3, 1599.00, 800.00, 150, 150, 1, 2, '护肤精华', 'https://picsum.photos/400/400?random=5', '["https://picsum.photos/400/400?random=51","https://picsum.photos/400/400?random=52"]');
+
+-- =============================================
+-- 收货地址表
+-- =============================================
+CREATE TABLE IF NOT EXISTS mall_address (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    receiver VARCHAR(50) NOT NULL COMMENT '收货人',
+    phone VARCHAR(20) NOT NULL COMMENT '手机号',
+    province VARCHAR(50) COMMENT '省',
+    city VARCHAR(50) COMMENT '市',
+    district VARCHAR(50) COMMENT '区',
+    detail VARCHAR(255) COMMENT '详细地址',
+    is_default TINYINT DEFAULT 0 COMMENT '是否默认地址(0否 1是)',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标记',
+    KEY idx_user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收货地址表';
+
+-- =============================================
+-- 优惠券表
+-- =============================================
+CREATE TABLE IF NOT EXISTS mall_coupon (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    title VARCHAR(100) NOT NULL COMMENT '优惠券名称',
+    type TINYINT NOT NULL COMMENT '类型(1满减 2折扣 3无门槛)',
+    discount_value DECIMAL(10, 2) NOT NULL COMMENT '优惠值',
+    min_amount DECIMAL(10, 2) DEFAULT 0.00 COMMENT '最低消费金额',
+    start_time DATETIME COMMENT '生效时间',
+    end_time DATETIME COMMENT '过期时间',
+    status TINYINT DEFAULT 0 COMMENT '状态(0未使用 1已使用 2已过期)',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标记',
+    KEY idx_user(user_id),
+    KEY idx_status(status),
+    KEY idx_end_time(end_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='优惠券表';
+
+-- =============================================
+-- 收藏表
+-- =============================================
+CREATE TABLE IF NOT EXISTS mall_favorite (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    product_id BIGINT NOT NULL COMMENT '商品ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标记',
+    UNIQUE KEY uk_user_product(user_id, product_id),
+    KEY idx_user(user_id),
+    KEY idx_product(product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收藏表';
+
+-- =============================================
+-- 积分记录表
+-- =============================================
+CREATE TABLE IF NOT EXISTS mall_points (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    points INT NOT NULL COMMENT '积分变动值(正负)',
+    type VARCHAR(50) NOT NULL COMMENT '类型(earn消费获得/redeem兑换/admin管理员调整)',
+    order_id BIGINT COMMENT '关联订单ID',
+    description VARCHAR(500) COMMENT '描述',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标记',
+    KEY idx_user(user_id),
+    KEY idx_order(order_id),
+    KEY idx_type(type),
+    KEY idx_create_time(create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分记录表';
+
+-- =============================================
+-- 商品评价表
+-- =============================================
+CREATE TABLE IF NOT EXISTS mall_review (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    product_id BIGINT NOT NULL COMMENT '商品ID',
+    order_id BIGINT COMMENT '订单ID',
+    rating INT NOT NULL COMMENT '评分(1-5星)',
+    content TEXT COMMENT '评价内容',
+    images VARCHAR(2000) COMMENT '图片URL列表(逗号分隔)',
+    reply TEXT COMMENT '商家回复',
+    reply_time DATETIME COMMENT '回复时间',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '删除标记',
+    KEY idx_user(user_id),
+    KEY idx_product(product_id),
+    KEY idx_order(order_id),
+    KEY idx_rating(rating)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品评价表';
+
+-- 用户表增加积分字段
+ALTER TABLE mall_user ADD COLUMN points BIGINT DEFAULT 0 COMMENT '用户积分' AFTER status;

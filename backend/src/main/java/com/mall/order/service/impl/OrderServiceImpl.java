@@ -120,7 +120,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
     }
 
-    @Override
+@Override
     @Transactional
     public boolean confirmOrder(Long orderId) {
         Order order = this.getById(orderId);
@@ -140,6 +140,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 int lockedBefore = p.getLockedStock() == null ? 0 : p.getLockedStock();
                 p.setLockedStock(Math.max(0, lockedBefore - qty));
                 p.setSoldCount((p.getSoldCount() == null ? 0 : p.getSoldCount()) + qty);
+                int sellableBefore = p.getSellableStock() == null ? 0 : p.getSellableStock();
+                int sellableAfter = Math.max(0, sellableBefore - qty);
+                p.setSellableStock(sellableAfter);
                 productService.updateById(p);
 
                 inventoryService.record(pid, orderId, "confirm", qty, "order paid", lockedBefore, p.getLockedStock(), order.getUserId());

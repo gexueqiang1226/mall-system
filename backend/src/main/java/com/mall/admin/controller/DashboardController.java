@@ -19,11 +19,14 @@ import java.util.Map;
 @RequestMapping("/admin/api/dashboard")
 public class DashboardController {
 
-    @Autowired
+@Autowired
     private OrderService orderService;
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private com.mall.user.service.UserService userService;
 
     @GetMapping("/stats")
     public ResponseResult getStats() {
@@ -59,11 +62,15 @@ public class DashboardController {
                 .count();
         stats.put("lowStockCount", lowStockCount);
 
-        // Online products
+// Online products
         long onlineProducts = products.stream()
                 .filter(p -> p.getIsOnline() != null && p.getIsOnline() == 1)
                 .count();
         stats.put("onlineProducts", onlineProducts);
+
+        // Total users
+        long totalUsers = userService.count();
+        stats.put("totalUsers", totalUsers);
 
         // Order status counts
         Map<String, Long> orderStatusCounts = new HashMap<>();
