@@ -1,5 +1,5 @@
 import { Component } from 'react'
-import { View, ScrollView, Text, Image, Button, Input } from '@tarojs/components'
+import { View, ScrollView, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import './index.css'
 
@@ -16,6 +16,7 @@ interface CartState {
   items: CartItem[]
   selectedAll: boolean
   totalPrice: number
+  failedImages: Set<number>
 }
 
 export default class Cart extends Component<{}, CartState> {
@@ -25,6 +26,7 @@ export default class Cart extends Component<{}, CartState> {
       items: [],
       selectedAll: false,
       totalPrice: 0,
+      failedImages: new Set(),
     }
   }
 
@@ -38,20 +40,26 @@ export default class Cart extends Component<{}, CartState> {
 
   loadCart = () => {
     const cart = Taro.getStorageSync('CART') || []
-    const items = cart.map((item) => ({
+    const items = cart.map((item: CartItem) => ({
       ...item,
+      mainImage: item.mainImage || '',
       selected: true,
     }))
-    this.setState({ items }, () => this.calculateTotal())
+    const selectedAll = items.length > 0
+    this.setState({ items, selectedAll }, () => this.calculateTotal())
   }
 
   toggleItemSelect = (productId: number) => {
     this.setState(
-      (prevState) => ({
-        items: prevState.items.map((item) =>
+      (prevState) => {
+        const items = prevState.items.map((item) =>
           item.productId === productId ? { ...item, selected: !item.selected } : item
-        ),
-      }),
+        )
+        return {
+          items,
+          selectedAll: items.every((item) => item.selected),
+        }
+      },
       () => this.calculateTotal()
     )
   }
@@ -61,10 +69,7 @@ export default class Cart extends Component<{}, CartState> {
       (prevState) => {
         const selectedAll = !prevState.selectedAll
         return {
-          items: prevState.items.map((item) => ({
-            ...item,
-            selected: selectedAll,
-          })),
+          items: prevState.items.map((item) => ({ ...item, selected: selectedAll })),
           selectedAll,
         }
       },
@@ -88,12 +93,22 @@ export default class Cart extends Component<{}, CartState> {
   }
 
   removeItem = (productId: number) => {
-    this.setState(
-      (prevState) => ({
-        items: prevState.items.filter((item) => item.productId !== productId),
-      }),
-      () => this.saveCart()
-    )
+    Taro.showModal({
+      title: '提示',
+      content: '确定要删除该商品吗？',
+      confirmText: '删除',
+      confirmColor: '#E53935',
+      success: (res) => {
+        if (res.confirm) {
+          this.setState(
+            (prevState) => ({
+              items: prevState.items.filter((item) => item.productId !== productId),
+            }),
+            () => this.saveCart()
+          )
+        }
+      },
+    })
   }
 
   saveCart = () => {
@@ -101,6 +116,14 @@ export default class Cart extends Component<{}, CartState> {
     const cartData = items.map(({ selected, ...rest }) => rest)
     Taro.setStorageSync('CART', cartData)
     this.calculateTotal()
+  }
+
+  handleImageError = (productId: number) => {
+    this.setState((prev) => {
+      const failedImages = new Set(prev.failedImages)
+      failedImages.add(productId)
+      return { failedImages }
+    })
   }
 
   calculateTotal = () => {
@@ -116,140 +139,110 @@ export default class Cart extends Component<{}, CartState> {
     const selectedItems = items.filter((item) => item.selected)
 
     if (selectedItems.length === 0) {
-      Taro.showToast({
-        title: '请选择商品',
-        icon: 'error',
-      })
+      Taro.showToast({ title: '请选择商品', icon: 'error' })
       return
     }
 
-    // 保存临时订单
-    Taro.setStorageSync('TEMP_ORDER', {
-      items: selectedItems,
-      totalPrice,
-    })
-
-    Taro.navigateTo({
-      url: '/pages/order/list/index',
-    })
-  }
-
-  clearCart = () => {
-    Taro.showModal({
-      title: '确认清空购物车？',
-      cancelText: '取消',
-      confirmText: '确定',
-      success: (res) => {
-        if (res.confirm) {
-          this.setState({ items: [] }, () => {
-            Taro.setStorageSync('CART', [])
-            Taro.showToast({
-              title: '已清空',
-              icon: 'success',
-            })
-          })
-        }
-      },
-    })
+    Taro.setStorageSync('TEMP_ORDER', { items: selectedItems, totalPrice })
+    Taro.navigateTo({ url: '/pages/order/list/index' })
   }
 
   render() {
-    const { items, selectedAll, totalPrice } = this.state
+    const { items, selectedAll, totalPrice, failedImages } = this.state
+    const selectedCount = items.filter((i) => i.selected).length
 
     if (items.length === 0) {
       return (
-        <View className="cart-empty">
-          <View className="empty-icon">🛒</View>
-          <Text>购物车为空</Text>
-          <Button
-            className="btn-shop"
-            onClick={() => {
-              Taro.switchTab({
-                url: '/pages/index/index',
-              })
-            }}
-          >
-            去购物
-          </Button>
+        <View className="cart-page">
+          <View className="cart-empty">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+              <path d="M9 6L9 4C9 3.44772 9.44772 3 10 3L14 3C14.5523 3 15 3.44772 15 4L15 6" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M20 6L4 6M20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6M20 6L18 6" stroke="#ccc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <Text className="empty-title">购物车是空的</Text>
+            <Text className="empty-desc">去逛逛，发现好物吧~</Text>
+            <View className="empty-btn" onClick={() => Taro.switchTab({ url: '/pages/index/index' })}>
+              <Text className="empty-btn-text">去购物</Text>
+            </View>
+          </View>
         </View>
       )
     }
 
     return (
-      <View className="cart-container">
-        <ScrollView scrollY className="items-scroll">
-          {/* 工具栏 */}
-          <View className="cart-toolbar">
-            <View className="select-all" onClick={this.toggleSelectAll}>
-              <View className={`checkbox ${selectedAll ? 'checked' : ''}`}></View>
-              <Text>全选</Text>
-            </View>
-            <Text className="clear-btn" onClick={this.clearCart}>
-              清空
-            </Text>
-          </View>
-
-          {/* 购物车项目 */}
+      <View className="cart-page">
+        <ScrollView scrollY className="cart-scroll">
           {items.map((item) => (
             <View key={item.productId} className="cart-item">
-              <View
-                className="checkbox-wrapper"
-                onClick={() => this.toggleItemSelect(item.productId)}
-              >
-                <View className={`checkbox ${item.selected ? 'checked' : ''}`}></View>
+              {/* Checkbox */}
+              <View className="cart-checkbox" onClick={() => this.toggleItemSelect(item.productId)}>
+                <View className={`check-circle ${item.selected ? 'checked' : ''}`}>
+                  {item.selected && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 12L10 17L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </View>
               </View>
 
-              <Image src={item.mainImage} className="item-image" />
+              {/* Image */}
+              {failedImages.has(item.productId) || !item.mainImage ? (
+                <View className="cart-item-img" style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}>
+                  <Text style={{ fontSize: '20px', color: '#999', fontWeight: 'bold' }}>{(item.productName || '?')[0]}</Text>
+                </View>
+              ) : (
+                <Image src={item.mainImage} mode="aspectFill" className="cart-item-img" onError={() => this.handleImageError(item.productId)} />
+              )}
 
-              <View className="item-info">
-                <Text className="item-name">{item.productName}</Text>
-                <Text className="item-price">¥{item.salePrice}</Text>
+              {/* Info */}
+              <View className="cart-item-info">
+                <Text className="cart-item-name" numberOfLines={2}>{item.productName}</Text>
+                <View className="cart-item-bottom">
+                  <Text className="cart-item-price">¥{item.salePrice}</Text>
+                  <View className="qty-stepper">
+                    <View className="stepper-btn" onClick={() => this.updateQuantity(item.productId, item.quantity - 1)}>
+                      <Text className="stepper-btn-text">−</Text>
+                    </View>
+                    <Text className="stepper-value">{item.quantity}</Text>
+                    <View className="stepper-btn" onClick={() => this.updateQuantity(item.productId, item.quantity + 1)}>
+                      <Text className="stepper-btn-text">+</Text>
+                    </View>
+                  </View>
+                </View>
               </View>
 
-              <View className="quantity-control">
-                <Button
-                  size="mini"
-                  onClick={() =>
-                    this.updateQuantity(item.productId, item.quantity - 1)
-                  }
-                >
-                  −
-                </Button>
-                <Input
-                  type="number"
-                  value={String(item.quantity)}
-                  readOnly
-                  className="qty-input"
-                />
-                <Button
-                  size="mini"
-                  onClick={() =>
-                    this.updateQuantity(item.productId, item.quantity + 1)
-                  }
-                >
-                  +
-                </Button>
+              {/* Delete */}
+              <View className="cart-delete" onClick={() => this.removeItem(item.productId)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 6H5H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6" stroke="#999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </View>
-
-              <Text
-                className="remove-btn"
-                onClick={() => this.removeItem(item.productId)}
-              >
-                🗑️
-              </Text>
             </View>
           ))}
         </ScrollView>
 
-        {/* 底部结算 */}
+        {/* Fixed Bottom */}
         <View className="cart-footer">
-          <View className="total-section">
-            <Text>合计:</Text>
-            <Text className="total-price">¥{totalPrice.toFixed(2)}</Text>
+          <View className="footer-left" onClick={this.toggleSelectAll}>
+            <View className={`check-circle ${selectedAll ? 'checked' : ''}`}>
+              {selectedAll && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12L10 17L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </View>
+            <Text className="select-all-text">全选</Text>
           </View>
-          <Button className="btn-checkout" onClick={this.checkout}>
-            结算 ({items.filter((i) => i.selected).length})
-          </Button>
+          <View className="footer-right">
+            <View className="total-wrap">
+              <Text className="total-label">合计:</Text>
+              <Text className="total-symbol">¥</Text>
+              <Text className="total-value">{totalPrice.toFixed(2)}</Text>
+            </View>
+            <View className={`checkout-btn ${selectedCount === 0 ? 'disabled' : ''}`} onClick={this.checkout}>
+              <Text className="checkout-text">结算({selectedCount})</Text>
+            </View>
+          </View>
         </View>
       </View>
     )

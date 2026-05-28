@@ -52,7 +52,16 @@ export default {
     router: {
       mode: 'hash'
     },
+    devServer: {
+      devMiddleware: {
+        writeToDisk: true
+      }
+    },
     postcss: {
+      pxtransform: {
+        enable: false,
+        config: {}
+      },
       autoprefixer: {
         enable: true,
         config: {}

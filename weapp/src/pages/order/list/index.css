@@ -1,9 +1,13 @@
+/* ==========================================
+   Order Confirm Page — Sam's Club Style
+   ========================================== */
+
 .order-container {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg);
 }
 
 .order-content {
@@ -13,23 +17,23 @@
 }
 
 .section-title {
-  font-size: 14px;
-  color: #999;
-  padding: 15px;
-  background-color: #f9f9f9;
+  font-size: var(--font-base);
+  color: var(--color-text-hint);
+  padding: var(--spacing-lg);
+  background-color: var(--color-white);
   font-weight: bold;
 }
 
-/* 地址部分 */
+/* Address */
 .address-section {
-  margin-bottom: 10px;
+  margin-bottom: var(--spacing-md);
 }
 
 .address-card {
-  background-color: #fff;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 8px;
+  background-color: var(--color-white);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+  border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
   display: flex;
@@ -43,57 +47,57 @@
 
 .address-header {
   display: flex;
-  gap: 15px;
-  margin-bottom: 8px;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
 }
 
 .recipient-name {
-  font-size: 14px;
+  font-size: var(--font-base);
   font-weight: bold;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .recipient-phone {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--font-base);
+  color: var(--color-text-secondary);
 }
 
 .address-text {
-  font-size: 12px;
-  color: #999;
+  font-size: var(--font-sm);
+  color: var(--color-text-hint);
   line-height: 1.5;
 }
 
 .address-placeholder {
-  font-size: 14px;
-  color: #999;
+  font-size: var(--font-base);
+  color: var(--color-text-hint);
 }
 
 .address-arrow {
-  color: #999;
-  font-size: 18px;
-  margin-left: 10px;
+  color: var(--color-text-hint);
+  font-size: var(--font-lg);
+  margin-left: var(--spacing-md);
 }
 
-/* 商品部分 */
+/* Items */
 .items-section {
-  margin-bottom: 10px;
-  background-color: #fff;
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-white);
 }
 
 .order-item {
   display: flex;
-  gap: 10px;
-  padding: 10px 15px;
-  border-bottom: 1px solid #eee;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
   align-items: center;
 }
 
 .item-image {
   width: 70px;
   height: 70px;
-  border-radius: 4px;
-  background-color: #f0f0f0;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-divider);
   flex-shrink: 0;
 }
 
@@ -106,122 +110,124 @@
 
 .item-name {
   font-size: 13px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .item-price {
-  font-size: 14px;
-  color: #ff6b6b;
+  font-size: var(--font-base);
+  color: var(--color-danger);
   font-weight: bold;
 }
 
 .item-quantity {
-  color: #999;
-  font-size: 12px;
+  color: var(--color-text-hint);
+  font-size: var(--font-sm);
   flex-shrink: 0;
 }
 
-/* 配送部分 */
+/* Shipping */
 .shipping-section {
-  margin-bottom: 10px;
-  background-color: #fff;
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-white);
 }
 
 .shipping-method {
   display: flex;
   justify-content: space-between;
-  padding: 15px;
-  border-bottom: 1px solid #eee;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .shipping-price {
-  color: #39ad00;
+  color: var(--color-success);
   font-weight: bold;
 }
 
-/* 支付方式 */
+/* Payment */
 .payment-section {
-  margin-bottom: 10px;
-  background-color: #fff;
+  margin-bottom: var(--spacing-md);
+  background-color: var(--color-white);
 }
 
 .payment-methods {
   display: flex;
-  gap: 10px;
-  padding: 15px;
-  border-bottom: 1px solid #eee;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .payment-method {
   flex: 1;
-  padding: 10px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .payment-method.active {
-  border-color: #ff6b6b;
-  background-color: #fff0f0;
-  color: #ff6b6b;
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
-/* 价格明细 */
+/* Price Detail */
 .price-detail {
-  background-color: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 8px;
+  background-color: var(--color-white);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
 }
 
 .price-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .price-row.total {
-  padding: 12px 0;
-  border-top: 1px solid #eee;
-  font-size: 16px;
+  padding: var(--spacing-md) 0;
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-md);
   font-weight: bold;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .price-row.total text:last-child {
-  color: #ff6b6b;
-  font-size: 18px;
+  color: var(--color-danger);
+  font-size: var(--font-lg);
 }
 
-/* 底部 */
+/* Footer */
 .order-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #fff;
-  padding: 12px 15px;
-  border-top: 1px solid #eee;
+  background-color: var(--color-white);
+  padding: var(--spacing-md) var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
+  border-top: 1px solid var(--color-border);
   display: flex;
-  gap: 10px;
+  gap: var(--spacing-md);
+  z-index: 100;
 }
 
 .btn-submit {
   flex: 1;
-  padding: 12px 20px;
-  background-color: #ff6b6b;
-  color: #fff;
-  border-radius: 4px;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background-color: var(--color-danger);
+  color: var(--color-white);
+  border-radius: var(--radius-sm);
   font-weight: bold;
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-base);
 }
 
 .btn-submit:active {
-  background-color: #e55b5b;
+  background-color: var(--color-primary-dark);
 }

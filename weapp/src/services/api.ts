@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro'
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api'
+const API_BASE_URL = 'http://localhost:8080/api'
 
 interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'

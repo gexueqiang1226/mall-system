@@ -10,7 +10,7 @@ class App extends Component {
   }
 
   initGlobalConfig() {
-    const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api'
+    const apiBaseUrl = 'http://localhost:8080/api'
     Taro.setStorageSync('API_BASE_URL', apiBaseUrl)
   }
 

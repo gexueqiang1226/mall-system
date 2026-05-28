@@ -17,7 +17,7 @@ export default definePageConfig({
   },
   tabBar: {
     color: '#999',
-    selectedColor: '#FF6B6B',
+    selectedColor: '#0056B3',
     backgroundColor: '#fff',
     borderStyle: 'black',
     list: [

@@ -19,6 +19,7 @@ interface OrderListState {
   recipientPhone: string
   address: string
   paymentMethod: string
+  failedImages: Set<number>
 }
 
 export default class OrderList extends Component<{}, OrderListState> {
@@ -31,11 +32,20 @@ export default class OrderList extends Component<{}, OrderListState> {
       recipientPhone: '',
       address: '请选择收货地址',
       paymentMethod: 'wechat',
+      failedImages: new Set(),
     }
   }
 
   componentDidMount() {
     this.loadOrderData()
+  }
+
+  handleImageError = (productId: number) => {
+    this.setState((prev) => {
+      const failedImages = new Set(prev.failedImages)
+      failedImages.add(productId)
+      return { failedImages }
+    })
   }
 
   loadOrderData = () => {
@@ -131,7 +141,7 @@ export default class OrderList extends Component<{}, OrderListState> {
   }
 
   render() {
-    const { items, totalPrice, recipientName, recipientPhone, address, paymentMethod } = this.state
+    const { items, totalPrice, recipientName, recipientPhone, address, paymentMethod, failedImages } = this.state
 
     return (
       <View className="order-container">
@@ -159,7 +169,13 @@ export default class OrderList extends Component<{}, OrderListState> {
             <View className="section-title">订单商品</View>
             {items.map((item) => (
               <View key={item.productId} className="order-item">
-                <Image src={item.mainImage} className="item-image" />
+                {failedImages.has(item.productId) || !item.mainImage ? (
+                  <View className="item-image" style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px' }}>
+                    <Text style={{ fontSize: '20px', color: '#999', fontWeight: 'bold' }}>{(item.productName || '?')[0]}</Text>
+                  </View>
+                ) : (
+                  <Image src={item.mainImage} className="item-image" onError={() => this.handleImageError(item.productId)} />
+                )}
                 <View className="item-details">
                   <Text className="item-name">{item.productName}</Text>
                   <Text className="item-price">¥{item.salePrice}</Text>
