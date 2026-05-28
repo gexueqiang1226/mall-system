@@ -1,0 +1,118 @@
+.login-page {
+  min-height: 100vh;
+  background: var(--color-white);
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
+}
+
+.back-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-text {
+  font-size: 24px;
+  color: var(--color-text-primary);
+}
+
+.header-title {
+  font-size: var(--font-md);
+  font-weight: bold;
+}
+
+.login-body {
+  padding: 40px var(--spacing-xxl);
+}
+
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.logo-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.logo-text {
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--color-white);
+}
+
+.login-welcome {
+  font-size: var(--font-xl);
+  font-weight: bold;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.login-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-hint);
+}
+
+.login-form {
+  width: 100%;
+}
+
+.form-field {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 14px var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-input {
+  flex: 1;
+  font-size: var(--font-base);
+  background: transparent;
+}
+
+.login-btn {
+  width: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-align: center;
+  margin-top: var(--spacing-lg);
+}
+
+.login-btn.disabled {
+  opacity: 0.6;
+}
+
+.login-btn-text {
+  color: var(--color-white);
+  font-size: var(--font-md);
+  font-weight: bold;
+}
+
+.login-links {
+  text-align: center;
+  margin-top: var(--spacing-xl);
+}
+
+.link-text {
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+}

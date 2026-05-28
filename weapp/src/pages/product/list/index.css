@@ -173,6 +173,61 @@
   justify-content: center;
 }
 
+/* Sub Category Tags */
+.sub-cat-bar {
+  background: var(--color-white);
+  white-space: nowrap;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.sub-cat-tag {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border-radius: 16px;
+  margin-right: var(--spacing-sm);
+}
+
+.sub-cat-tag.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* Sold Out Corner */
+.sold-out-corner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sold-out-corner-text {
+  font-size: var(--font-md);
+  color: var(--color-white);
+  font-weight: bold;
+}
+
+.plist-soldout-text {
+  font-size: var(--font-xs);
+  color: var(--color-text-hint);
+}
+
+.plist-sold-count {
+  font-size: 10px;
+  color: var(--color-text-hint);
+  display: block;
+  margin-top: 4px;
+}
+
 /* Empty */
 .plist-empty {
   display: flex;

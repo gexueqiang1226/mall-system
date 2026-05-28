@@ -4,16 +4,30 @@ import Taro from '@tarojs/taro'
 import './index.css'
 import api from '@/services/api'
 
+interface OrderBadge {
+  pending: number
+  paid: number
+  shipped: number
+  completed: number
+}
+
 interface UserState {
   userInfo: any
   isLogin: boolean
   showLogin: boolean
+  showRegister: boolean
   username: string
   password: string
-  showRegister: boolean
   registerUsername: string
   registerPassword: string
   registerPhone: string
+  profile: any
+  pointsBalance: number
+  couponsCount: number
+  favoritesCount: number
+  browseHistoryCount: number
+  orderBadge: OrderBadge
+  loading: boolean
 }
 
 export default class User extends Component<{}, UserState> {
@@ -23,12 +37,19 @@ export default class User extends Component<{}, UserState> {
       userInfo: null,
       isLogin: false,
       showLogin: false,
+      showRegister: false,
       username: '',
       password: '',
-      showRegister: false,
       registerUsername: '',
       registerPassword: '',
       registerPhone: '',
+      profile: null,
+      pointsBalance: 0,
+      couponsCount: 0,
+      favoritesCount: 0,
+      browseHistoryCount: 0,
+      orderBadge: { pending: 0, paid: 0, shipped: 0, completed: 0 },
+      loading: true,
     }
   }
 
@@ -43,10 +64,65 @@ export default class User extends Component<{}, UserState> {
   checkLogin = () => {
     const userInfo = Taro.getStorageSync('USER_INFO')
     if (userInfo && userInfo.userId) {
-      this.setState({ userInfo, isLogin: true })
+      this.setState({ userInfo, isLogin: true }, () => {
+        this.loadUserData()
+      })
     } else {
-      this.setState({ userInfo: null, isLogin: false })
+      this.setState({ userInfo: null, isLogin: false, loading: false })
     }
+  }
+
+  loadUserData = async () => {
+    const { userInfo } = this.state
+    if (!userInfo || !userInfo.userId) return
+
+    const userId = userInfo.userId
+
+    try {
+      const [profileRes, pointsRes, couponsRes, favoritesRes] = await Promise.all([
+        api.get('/user/profile', { userId }).catch(() => null),
+        api.get('/points/balance', { userId }).catch(() => null),
+        api.get('/coupons', { userId }).catch(() => null),
+        api.get('/favorites', { userId }).catch(() => null),
+      ])
+
+      this.setState({
+        profile: profileRes?.data || null,
+        pointsBalance: pointsRes?.data?.balance || pointsRes?.data || 0,
+        couponsCount: Array.isArray(couponsRes?.data) ? couponsRes.data.length : (couponsRes?.data?.total || 0),
+        favoritesCount: Array.isArray(favoritesRes?.data) ? favoritesRes.data.length : (favoritesRes?.data?.total || 0),
+        loading: false,
+      })
+
+      this.loadOrderBadges(userId)
+    } catch (error) {
+      console.error('加载用户数据失败:', error)
+      this.setState({ loading: false })
+    }
+  }
+
+  loadOrderBadges = async (userId: number) => {
+    const statuses = [
+      { key: 'pending', status: 'PENDING' },
+      { key: 'paid', status: 'PAID' },
+      { key: 'shipped', status: 'SHIPPED' },
+      { key: 'completed', status: 'COMPLETED' },
+    ]
+
+    const badge = { pending: 0, paid: 0, shipped: 0, completed: 0 }
+
+    await Promise.all(
+      statuses.map(async (s) => {
+        try {
+          const res = await api.get('/orders', { userId, status: s.status, page: 1, size: 1 })
+          badge[s.key] = res?.data?.total || 0
+        } catch (e) {
+          // ignore
+        }
+      })
+    )
+
+    this.setState({ orderBadge: badge })
   }
 
   handleLogin = async () => {
@@ -68,7 +144,9 @@ export default class User extends Component<{}, UserState> {
         }
         Taro.setStorageSync('USER_INFO', userInfo)
         Taro.setStorageSync('TOKEN', data.token)
-        this.setState({ userInfo, isLogin: true, showLogin: false })
+        this.setState({ userInfo, isLogin: true, showLogin: false, loading: true }, () => {
+          this.loadUserData()
+        })
         Taro.showToast({ title: '登录成功', icon: 'success' })
       }
     } catch (error) {
@@ -107,7 +185,16 @@ export default class User extends Component<{}, UserState> {
         if (res.confirm) {
           Taro.removeStorageSync('USER_INFO')
           Taro.removeStorageSync('TOKEN')
-          this.setState({ userInfo: null, isLogin: false })
+          this.setState({
+            userInfo: null,
+            isLogin: false,
+            profile: null,
+            pointsBalance: 0,
+            couponsCount: 0,
+            favoritesCount: 0,
+            browseHistoryCount: 0,
+            orderBadge: { pending: 0, paid: 0, shipped: 0, completed: 0 },
+          })
           Taro.showToast({ title: '已退出', icon: 'success' })
         }
       },
@@ -118,31 +205,45 @@ export default class User extends Component<{}, UserState> {
     Taro.navigateTo({ url: '/pages/order/myorders/index' })
   }
 
+  goToOrdersByStatus = (status?: string) => {
+    const base = '/pages/order/myorders/index'
+    const url = status ? `${base}?status=${status}` : base
+    Taro.navigateTo({ url })
+  }
+
+  goToPage = (path: string) => {
+    Taro.navigateTo({ url: path })
+  }
+
+  getInitial = () => {
+    const { userInfo, profile } = this.state
+    const name = profile?.nickName || userInfo?.nickName || userInfo?.username || ''
+    return name.charAt(0).toUpperCase() || 'U'
+  }
+
+  getDisplayName = () => {
+    const { userInfo, profile } = this.state
+    return profile?.nickName || userInfo?.nickName || userInfo?.username || '用户'
+  }
+
   renderLoginForm = () => {
     const { username, password } = this.state
     return (
       <View className="auth-page">
         <View className="auth-header">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="8" r="4" stroke="#0056B3" strokeWidth="1.5" />
-            <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#0056B3" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <View className="auth-logo">
+            <Text className="auth-logo-text">U</Text>
+          </View>
           <Text className="auth-title">欢迎登录</Text>
           <Text className="auth-subtitle">登录后享受更多会员权益</Text>
         </View>
         <View className="auth-form">
           <View className="auth-field">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke="#999" strokeWidth="1.5" />
-              <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Text className="auth-field-icon">&#x1F464;</Text>
             <Input className="auth-input" placeholder="请输入用户名" value={username} onInput={(e) => this.setState({ username: e.detail.value })} />
           </View>
           <View className="auth-field">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="11" width="14" height="10" rx="2" stroke="#999" strokeWidth="1.5" />
-              <path d="M8 11V7C8 4.79086 9.79086 3 12 3V3C14.2091 3 16 4.79086 16 7V11" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Text className="auth-field-icon">&#x1F512;</Text>
             <Input className="auth-input" placeholder="请输入密码" type="password" value={password} onInput={(e) => this.setState({ password: e.detail.value })} />
           </View>
           <View className="auth-submit" onClick={this.handleLogin}>
@@ -160,32 +261,23 @@ export default class User extends Component<{}, UserState> {
     return (
       <View className="auth-page">
         <View className="auth-header">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5V19M5 12H19" stroke="#0056B3" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="12" cy="12" r="10" stroke="#0056B3" strokeWidth="1.5" />
-          </svg>
+          <View className="auth-logo">
+            <Text className="auth-logo-text">+</Text>
+          </View>
           <Text className="auth-title">注册账号</Text>
           <Text className="auth-subtitle">加入我们，享受会员专属权益</Text>
         </View>
         <View className="auth-form">
           <View className="auth-field">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke="#999" strokeWidth="1.5" />
-              <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Text className="auth-field-icon">&#x1F464;</Text>
             <Input className="auth-input" placeholder="请输入用户名" value={registerUsername} onInput={(e) => this.setState({ registerUsername: e.detail.value })} />
           </View>
           <View className="auth-field">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="11" width="14" height="10" rx="2" stroke="#999" strokeWidth="1.5" />
-              <path d="M8 11V7C8 4.79086 9.79086 3 12 3V3C14.2091 3 16 4.79086 16 7V11" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Text className="auth-field-icon">&#x1F512;</Text>
             <Input className="auth-input" placeholder="请输入密码" type="password" value={registerPassword} onInput={(e) => this.setState({ registerPassword: e.detail.value })} />
           </View>
           <View className="auth-field">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M22 16.92V19.92C22 20.48 21.78 21.01 21.39 21.39C21.01 21.78 20.48 22 19.92 22C16.56 21.68 13.32 20.55 10.5 18.68C7.87 16.98 5.66 14.77 3.96 12.14C2.05 9.28 0.92 6.02 0.61 2.63C0.61 2.08 0.82 1.56 1.2 1.17C1.58 0.79 2.1 0.57 2.65 0.57H5.65C6.64 0.56 7.48 1.26 7.65 2.23C7.8 3.15 8.06 4.05 8.43 4.91L6.73 6.61C8.24 9.49 10.51 11.76 13.39 13.27L15.09 11.57C15.95 11.94 16.85 12.2 17.77 12.35C18.74 12.52 19.44 13.36 19.43 14.35V16.92H22Z" stroke="#999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Text className="auth-field-icon">&#x1F4F1;</Text>
             <Input className="auth-input" placeholder="手机号（选填）" value={registerPhone} onInput={(e) => this.setState({ registerPhone: e.detail.value })} />
           </View>
           <View className="auth-submit" onClick={this.handleRegister}>
@@ -202,10 +294,9 @@ export default class User extends Component<{}, UserState> {
       <View className="user-page">
         <View className="profile-banner-empty">
           <View className="profile-empty-content">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" />
-              <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <View className="profile-empty-avatar">
+              <Text className="profile-empty-avatar-text">?</Text>
+            </View>
             <Text className="profile-empty-title">登录后享受更多服务</Text>
             <View className="profile-empty-btns">
               <View className="profile-login-btn" onClick={() => this.setState({ showLogin: true })}>
@@ -222,25 +313,63 @@ export default class User extends Component<{}, UserState> {
   }
 
   renderLoggedIn = () => {
-    const { userInfo } = this.state
+    const { pointsBalance, couponsCount, favoritesCount, browseHistoryCount, orderBadge } = this.state
+
+    const orderShortcuts = [
+      { key: 'pending', label: '待付款', status: 'PENDING', count: orderBadge.pending },
+      { key: 'paid', label: '待发货', status: 'PAID', count: orderBadge.paid },
+      { key: 'shipped', label: '待收货', status: 'SHIPPED', count: orderBadge.shipped },
+      { key: 'completed', label: '待评价', status: 'COMPLETED', count: orderBadge.completed },
+    ]
+
+    const menuItems = [
+      { icon: '&#x1F4CB;', label: '我的订单', path: '/pages/order/myorders/index' },
+      { icon: '&#x2764;', label: '我的收藏', path: '/pages/favorites/index' },
+      { icon: '&#x1F4CD;', label: '地址管理', path: '/pages/address/index' },
+      { icon: '&#x1F3F7;', label: '优惠券', path: '/pages/coupon/index' },
+      { icon: '&#x2B50;', label: '积分中心', path: '/pages/points/index' },
+      { icon: '&#x1F464;', label: '个人资料', path: '/pages/profile/index' },
+    ]
 
     return (
       <View className="user-page">
         <ScrollView scrollY className="user-scroll">
-          {/* Profile Card */}
+          {/* Profile Header */}
           <View className="profile-banner">
             <View className="profile-info">
-              <View className="profile-avatar">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="8" r="4" stroke="#fff" strokeWidth="1.5" />
-                  <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              <View className="profile-avatar-circle">
+                <Text className="profile-avatar-initial">{this.getInitial()}</Text>
               </View>
               <View className="profile-meta">
-                <Text className="profile-name">{userInfo.nickName || userInfo.username}</Text>
-                <View className="member-badge">
-                  <Text className="member-text">会员</Text>
+                <Text className="profile-name">{this.getDisplayName()}</Text>
+                <View className="vip-badge">
+                  <Text className="vip-text">&#x1F451; 卓越会员</Text>
                 </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Stats Row */}
+          <View className="stats-card">
+            <View className="stats-row">
+              <View className="stat-item">
+                <Text className="stat-value">{pointsBalance}</Text>
+                <Text className="stat-label">积分</Text>
+              </View>
+              <View className="stat-divider" />
+              <View className="stat-item">
+                <Text className="stat-value">{couponsCount}</Text>
+                <Text className="stat-label">优惠券</Text>
+              </View>
+              <View className="stat-divider" />
+              <View className="stat-item">
+                <Text className="stat-value">{favoritesCount}</Text>
+                <Text className="stat-label">收藏</Text>
+              </View>
+              <View className="stat-divider" />
+              <View className="stat-item">
+                <Text className="stat-value">{browseHistoryCount}</Text>
+                <Text className="stat-label">足迹</Text>
               </View>
             </View>
           </View>
@@ -251,44 +380,49 @@ export default class User extends Component<{}, UserState> {
               <Text className="section-title">我的订单</Text>
               <View className="view-all" onClick={this.goToOrders}>
                 <Text className="view-all-text">全部订单</Text>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 6L15 12L9 18" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Text className="view-all-arrow">&gt;</Text>
               </View>
             </View>
             <View className="order-shortcuts">
-              {[
-                { key: 'unpaid', label: '待付款', svg: `<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="#0056B3" stroke-width="1.5"/><path d="M2 10H22" stroke="#0056B3" stroke-width="1.5"/><path d="M6 16H10" stroke="#0056B3" stroke-width="1.5" stroke-linecap="round"/></svg>` },
-                { key: 'unshipped', label: '待发货', svg: `<svg viewBox="0 0 24 24" fill="none"><rect x="1" y="3" width="15" height="13" rx="2" stroke="#0056B3" stroke-width="1.5"/><path d="M16 8H20L23 12V16H16V8Z" stroke="#0056B3" stroke-width="1.5" stroke-linejoin="round"/><circle cx="5.5" cy="18.5" r="2.5" stroke="#0056B3" stroke-width="1.5"/><circle cx="18.5" cy="18.5" r="2.5" stroke="#0056B3" stroke-width="1.5"/></svg>` },
-                { key: 'shipped', label: '待收货', svg: `<svg viewBox="0 0 24 24" fill="none"><path d="M9 11L11 13L15 9" stroke="#0056B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#0056B3" stroke-width="1.5"/></svg>` },
-                { key: 'completed', label: '已完成', svg: `<svg viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="#0056B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-              ].map((item) => (
-                <View key={item.key} className="order-shortcut-item" onClick={this.goToOrders}>
-                  <View className="order-icon" dangerouslySetInnerHTML={{ __html: item.svg }} />
+              {orderShortcuts.map((item) => (
+                <View
+                  key={item.key}
+                  className="order-shortcut-item"
+                  onClick={() => this.goToOrdersByStatus(item.status)}
+                >
+                  <View className="order-icon-wrap">
+                    <Text className="order-icon-text">
+                      {item.key === 'pending' ? '&#x1F4B3;' :
+                       item.key === 'paid' ? '&#x1F4E6;' :
+                       item.key === 'shipped' ? '&#x1F69A;' : '&#x2705;'}
+                    </Text>
+                    {item.count > 0 && (
+                      <View className="order-badge">
+                        <Text className="order-badge-text">{item.count > 99 ? '99+' : item.count}</Text>
+                      </View>
+                    )}
+                  </View>
                   <Text className="order-label">{item.label}</Text>
                 </View>
               ))}
+              <View className="order-shortcut-item" onClick={this.goToOrders}>
+                <View className="order-icon-wrap">
+                  <Text className="order-icon-text">&#x1F4CA;</Text>
+                </View>
+                <Text className="order-label">全部</Text>
+              </View>
             </View>
           </View>
 
           {/* Menu List */}
           <View className="section-card menu-section">
-            {[
-              { icon: 'M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z', label: '我的收藏' },
-              { icon: 'M20 12V22H4V12M22 7H2V12H22V7ZM12 22V7M12 7H7.5C6.83696 7 6.20107 6.73661 5.73223 6.26777C5.26339 5.79893 5 5.16304 5 4.5C5 3.83696 5.26339 3.20107 5.73223 2.73223C6.20107 2.26339 6.83696 2 7.5 2C11 2 12 7 12 7ZM12 7H16.5C17.163 7 17.7989 6.73661 18.2678 6.26777C18.7366 5.79893 19 5.16304 19 4.5C19 3.83696 18.7366 3.20107 18.2678 2.73223C17.7989 2.26339 17.163 2 16.5 2C13 2 12 7 12 7Z', label: '优惠券' },
-              { icon: 'M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 5.02944 7.02944 1 12 1C16.9706 1 21 5.02944 21 10ZM12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z', label: '收货地址' },
-              { icon: 'M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15ZM12 15V21M12 3V9M3 12H9M15 12H21', label: '设置' },
-            ].map((item, index) => (
-              <View key={index} className="menu-item">
+            {menuItems.map((item, index) => (
+              <View key={index} className="menu-item" onClick={() => this.goToPage(item.path)}>
                 <View className="menu-icon-wrap">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d={item.icon} stroke="#0056B3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Text className="menu-icon-text">{item.icon}</Text>
                 </View>
                 <Text className="menu-text">{item.label}</Text>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 6L15 12L9 18" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Text className="menu-arrow">&gt;</Text>
               </View>
             ))}
           </View>
@@ -305,11 +439,23 @@ export default class User extends Component<{}, UserState> {
   }
 
   render() {
-    const { isLogin, showLogin, showRegister } = this.state
+    const { isLogin, showLogin, showRegister, loading } = this.state
 
     if (showLogin && !isLogin) return this.renderLoginForm()
     if (showRegister) return this.renderRegisterForm()
     if (!isLogin) return this.renderNotLogin()
+
+    if (loading) {
+      return (
+        <View className="user-page">
+          <View className="loading-wrap">
+            <View className="loading-spinner" />
+            <Text className="loading-text">加载中...</Text>
+          </View>
+        </View>
+      )
+    }
+
     return this.renderLoggedIn()
   }
 }

@@ -16,24 +16,39 @@ interface Product {
   mainImage: string
   salePrice: number
   marketPrice: number
+  costPrice: number
   sellableStock: number
   isOnline: number
+  isRecommend: number
+  soldCount: number
+  categoryId: number
 }
 
 interface CategoryItem {
   id: number
-  name: string
-  icon: string
+  categoryName: string
+  parentId: number
 }
 
 interface HomePageState {
   banners: Banner[]
   categories: CategoryItem[]
+  allProducts: Product[]
   flashProducts: Product[]
   hotProducts: Product[]
+  newProducts: Product[]
+  recommendProducts: Product[]
   loading: boolean
   countdown: { hours: number; minutes: number; seconds: number }
   failedImages: Set<number>
+}
+
+const CAT_EMOJIS: Record<string, string> = {
+  '水果': '🍎', '蔬菜': '🥬', '肉类': '🍗', '粮油': '🌾', '牛奶': '🥛',
+  '零食': '🍬', '饮料': '🥤', '海鲜': '🦐', '母婴': '👶', '个护': '🧴',
+  '家居': '🏠', '禽蛋': '🥚', '电子产品': '📱', '服装鞋帽': '👔',
+  '美妆护肤': '💄', '食品饮料': '🍔', '家居生活': '🏡', '母婴用品': '🍼',
+  '运动户外': '⚽', '更多分类': '📦',
 }
 
 export default class Index extends Component<{}, HomePageState> {
@@ -43,78 +58,93 @@ export default class Index extends Component<{}, HomePageState> {
     super(props)
     this.state = {
       banners: [
-        { id: 1, imageUrl: '', title: '新品上市' },
-        { id: 2, imageUrl: '', title: '限时优惠' },
-        { id: 3, imageUrl: '', title: '热卖商品' },
+        { id: 1, imageUrl: '', title: '新人专享 首单立减50' },
+        { id: 2, imageUrl: '', title: '限时特卖 全场5折起' },
+        { id: 3, imageUrl: '', title: '会员日 双倍积分' },
       ],
-      categories: [
-        { id: 1, name: '电子产品', icon: 'electronics' },
-        { id: 2, name: '服装鞋帽', icon: 'clothing' },
-        { id: 3, name: '美妆护肤', icon: 'beauty' },
-        { id: 4, name: '食品饮料', icon: 'food' },
-        { id: 5, name: '家居生活', icon: 'home' },
-        { id: 6, name: '母婴用品', icon: 'baby' },
-        { id: 7, name: '运动户外', icon: 'sports' },
-        { id: 8, name: '更多分类', icon: 'more' },
-      ],
+      categories: [],
+      allProducts: [],
       flashProducts: [],
       hotProducts: [],
+      newProducts: [],
+      recommendProducts: [],
       loading: true,
-      countdown: { hours: 2, minutes: 30, seconds: 0 },
+      countdown: { hours: 0, minutes: 0, seconds: 0 },
       failedImages: new Set(),
     }
   }
 
   componentDidMount() {
-    this.loadProducts()
+    this.loadData()
     this.startCountdown()
   }
 
   componentWillUnmount() {
-    if (this.countdownTimer) {
-      clearInterval(this.countdownTimer)
-    }
+    if (this.countdownTimer) clearInterval(this.countdownTimer)
   }
 
   startCountdown = () => {
-    this.countdownTimer = setInterval(() => {
-      this.setState((prev) => {
-        let { hours, minutes, seconds } = prev.countdown
-        seconds--
-        if (seconds < 0) {
-          seconds = 59
-          minutes--
-        }
-        if (minutes < 0) {
-          minutes = 59
-          hours--
-        }
-        if (hours < 0) {
-          return { countdown: { hours: 2, minutes: 30, seconds: 0 } }
-        }
-        return { countdown: { hours, minutes, seconds } }
+    const calcEndOfDay = () => {
+      const now = new Date()
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+      return Math.max(0, Math.floor((end.getTime() - now.getTime()) / 1000))
+    }
+    const update = () => {
+      const diff = calcEndOfDay()
+      this.setState({
+        countdown: {
+          hours: Math.floor(diff / 3600),
+          minutes: Math.floor((diff % 3600) / 60),
+          seconds: diff % 60,
+        },
       })
-    }, 1000)
+    }
+    update()
+    this.countdownTimer = setInterval(update, 1000)
   }
 
-  loadProducts = async () => {
+  loadData = async () => {
     try {
-      const hotRes = await api.get('/products', { isOnline: 1, page: 1, size: 6 })
-      const flashRes = await api.get('/products', { isOnline: 1, page: 1, size: 8 })
+      const [prodRes, catRes] = await Promise.all([
+        api.get('/products', { size: 100, isOnline: 1 }),
+        api.get('/categories'),
+      ])
+      const allProducts: Product[] = (prodRes.data?.items || []).map((p: Product) => ({
+        ...p, mainImage: p.mainImage || '',
+      }))
+      const categories: CategoryItem[] = catRes.data || []
+
+      const flashProducts = allProducts.slice(0, 4)
+
+      let hotProducts = allProducts.filter((p) => p.isRecommend === 1)
+      if (hotProducts.length < 4) {
+        hotProducts = [...allProducts].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)).slice(0, 6)
+      } else {
+        hotProducts = hotProducts.slice(0, 6)
+      }
+
+      const newProducts = [...allProducts].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 6)
+
+      const browseHistory: number[] = JSON.parse(Taro.getStorageSync('SAM_BROWSE') || '[]')
+      let recommendProducts: Product[] = []
+      if (browseHistory.length > 0) {
+        const catFreq: Record<number, number> = {}
+        browseHistory.forEach((pid) => {
+          const p = allProducts.find((x) => x.id === pid)
+          if (p && p.categoryId) catFreq[p.categoryId] = (catFreq[p.categoryId] || 0) + 1
+        })
+        const topCats = Object.keys(catFreq).sort((a, b) => catFreq[+b] - catFreq[+a]).slice(0, 3)
+        recommendProducts = allProducts.filter((p) => topCats.includes(String(p.categoryId))).slice(0, 6)
+      }
+      if (recommendProducts.length < 4) {
+        recommendProducts = [...allProducts].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)).slice(0, 6)
+      }
 
       this.setState({
-        hotProducts: (hotRes.data?.items || []).map((p: Product) => ({
-          ...p,
-          mainImage: p.mainImage || '',
-        })),
-        flashProducts: (flashRes.data?.items || []).map((p: Product) => ({
-          ...p,
-          mainImage: p.mainImage || '',
-        })),
-        loading: false,
+        allProducts, categories, flashProducts, hotProducts, newProducts, recommendProducts, loading: false,
       })
     } catch (error) {
-      console.error('加载商品失败:', error)
+      console.error('加载数据失败:', error)
       this.setState({ loading: false })
     }
   }
@@ -123,12 +153,28 @@ export default class Index extends Component<{}, HomePageState> {
     Taro.navigateTo({ url: `/pages/product/detail/index?id=${productId}` })
   }
 
+  goToSearch = () => {
+    Taro.navigateTo({ url: '/pages/search/index' })
+  }
+
   goToCategory = (categoryId: number) => {
     Taro.switchTab({ url: '/pages/product/list/index' })
   }
 
-  goToProductList = () => {
-    Taro.switchTab({ url: '/pages/product/list/index' })
+  addToCart = async (product: Product, e: any) => {
+    e.stopPropagation()
+    const userInfo = Taro.getStorageSync('USER_INFO')
+    if (!userInfo || !userInfo.userId) {
+      Taro.showToast({ title: '请先登录', icon: 'error' })
+      setTimeout(() => Taro.navigateTo({ url: '/pages/login/index' }), 1000)
+      return
+    }
+    try {
+      await api.post('/cart', { userId: userInfo.userId, productId: product.id, quantity: 1 })
+      Taro.showToast({ title: '已加入购物车', icon: 'success' })
+    } catch (error) {
+      Taro.showToast({ title: '操作失败', icon: 'error' })
+    }
   }
 
   handleImageError = (productId: number) => {
@@ -139,59 +185,39 @@ export default class Index extends Component<{}, HomePageState> {
     })
   }
 
-  addToCart = async (product: Product, e: any) => {
-    e.stopPropagation()
-    try {
-      const cart = Taro.getStorageSync('CART') || []
-      const existItem = cart.find((item) => item.productId === product.id)
-      if (existItem) {
-        existItem.quantity += 1
-      } else {
-        cart.push({
-          productId: product.id,
-          productName: product.productName,
-          mainImage: product.mainImage,
-          salePrice: product.salePrice,
-          quantity: 1,
-        })
-      }
-      Taro.setStorageSync('CART', cart)
-      Taro.showToast({ title: '已加入购物车', icon: 'success' })
-    } catch (error) {
-      Taro.showToast({ title: '操作失败', icon: 'error' })
-    }
-  }
-
-  renderCategoryIcon = (icon: string) => {
-    const icons: Record<string, string> = {
-      electronics: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="4" width="24" height="32" rx="3" stroke="#0056B3" stroke-width="2"/><line x1="16" y1="32" x2="24" y2="32" stroke="#0056B3" stroke-width="2" stroke-linecap="round"/><rect x="12" y="9" width="16" height="18" rx="1" fill="#E3F2FD"/></svg>`,
-      clothing: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 10L4 16L8 18L10 14V34H30V14L32 18L36 16L30 10C28 8 26 7 24 6C22 5 22 9 20 9C18 9 18 5 16 6C14 7 12 8 10 10Z" stroke="#0056B3" stroke-width="2" fill="#E3F2FD"/></svg>`,
-      beauty: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="22" rx="12" ry="14" stroke="#0056B3" stroke-width="2" fill="#E3F2FD"/><path d="M14 12C14 8 16 4 20 4C24 4 26 8 26 12" stroke="#0056B3" stroke-width="2"/><path d="M20 8V14" stroke="#0056B3" stroke-width="2" stroke-linecap="round"/></svg>`,
-      food: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="22" r="14" stroke="#0056B3" stroke-width="2" fill="#E3F2FD"/><path d="M14 20C14 16 17 14 20 14C23 14 26 16 26 20" stroke="#0056B3" stroke-width="2" stroke-linecap="round"/><path d="M20 10V14" stroke="#0056B3" stroke-width="2" stroke-linecap="round"/></svg>`,
-      home: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 20L20 6L34 20" stroke="#0056B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 18V34H30V18" stroke="#0056B3" stroke-width="2"/><rect x="16" y="24" width="8" height="10" rx="1" fill="#E3F2FD" stroke="#0056B3" stroke-width="2"/></svg>`,
-      baby: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" stroke="#0056B3" stroke-width="2" fill="#E3F2FD"/><circle cx="16" cy="18" r="2" fill="#0056B3"/><circle cx="24" cy="18" r="2" fill="#0056B3"/><path d="M16 24C16 24 18 27 20 27C22 27 24 24 24 24" stroke="#0056B3" stroke-width="2" stroke-linecap="round"/></svg>`,
-      sports: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="14" stroke="#0056B3" stroke-width="2" fill="#E3F2FD"/><path d="M20 6L20 34" stroke="#0056B3" stroke-width="2"/><path d="M6 20L34 20" stroke="#0056B3" stroke-width="2"/><ellipse cx="20" cy="20" rx="6" ry="14" stroke="#0056B3" stroke-width="2"/></svg>`,
-      more: `<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="4" fill="#0056B3"/><circle cx="26" cy="14" r="4" fill="#0056B3"/><circle cx="14" cy="26" r="4" fill="#0056B3"/><circle cx="26" cy="26" r="4" fill="#0056B3"/></svg>`,
-    }
-    return icons[icon] || icons['more']
-  }
-
   padZero = (n: number) => (n < 10 ? `0${n}` : `${n}`)
 
+  renderProductImage = (product: Product, className: string) => {
+    const { failedImages } = this.state
+    if (failedImages.has(product.id) || !product.mainImage) {
+      return (
+        <View className={className} style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: '28px' }}>📦</Text>
+        </View>
+      )
+    }
+    return <Image src={product.mainImage} mode="aspectFill" className={className} onError={() => this.handleImageError(product.id)} />
+  }
+
   render() {
-    const { banners, categories, flashProducts, hotProducts, countdown, failedImages } = this.state
+    const { banners, categories, flashProducts, hotProducts, newProducts, recommendProducts, countdown, loading } = this.state
+
+    if (loading) {
+      return (
+        <View className="home-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+          <View className="loading-spinner" />
+        </View>
+      )
+    }
+
+    const parentCats = categories.filter((c) => !c.parentId || c.parentId === 0).slice(0, 12)
+    const displayCats = parentCats.length > 0 ? parentCats : categories.slice(0, 12)
 
     return (
       <View className="home-page">
         {/* Search Bar */}
-        <View className="search-bar">
+        <View className="search-bar" onClick={this.goToSearch}>
           <View className="search-input-wrap">
-            <View className="search-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="#999" strokeWidth="2" />
-                <path d="M16 16L21 21" stroke="#999" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </View>
             <Text className="search-placeholder">搜索商品</Text>
           </View>
         </View>
@@ -199,11 +225,11 @@ export default class Index extends Component<{}, HomePageState> {
         <ScrollView scrollY className="home-scroll">
           {/* Banner Swiper */}
           <View className="banner-section">
-            <Swiper className="banner-swiper" indicatorDots autoplay interval={4000} circular indicatorColor="rgba(255,255,255,0.4)" indicatorActiveColor="#FFFFFF">
+            <Swiper className="banner-swiper" indicatorDots autoplay interval={3000} circular indicatorColor="rgba(255,255,255,0.4)" indicatorActiveColor="#FFFFFF">
               {banners.map((banner) => (
                 <SwiperItem key={banner.id}>
-                  <View className="banner-img" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: '#fff', fontSize: '32px', fontWeight: 'bold', textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>{banner.title}</Text>
+                  <View className="banner-img" style={{ background: 'linear-gradient(135deg, #0056B3 0%, #2E7DD2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+                    <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold', textAlign: 'center' }}>{banner.title}</Text>
                   </View>
                 </SwiperItem>
               ))}
@@ -211,85 +237,165 @@ export default class Index extends Component<{}, HomePageState> {
           </View>
 
           {/* Category Grid */}
-          <View className="section-card category-section">
-            <View className="category-grid">
-              {categories.map((cat) => (
-                <View key={cat.id} className="category-item" onClick={() => this.goToCategory(cat.id)}>
-                  <View className="category-icon-circle" dangerouslySetInnerHTML={{ __html: this.renderCategoryIcon(cat.icon) }} />
-                  <Text className="category-name">{cat.name}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Flash Sale */}
-          <View className="section-card flash-section">
-            <View className="section-header">
-              <View className="section-header-left">
-                <Text className="flash-title">限时抢购</Text>
-                <View className="countdown-wrap">
-                  <Text className="countdown-num">{this.padZero(countdown.hours)}</Text>
-                  <Text className="countdown-sep">:</Text>
-                  <Text className="countdown-num">{this.padZero(countdown.minutes)}</Text>
-                  <Text className="countdown-sep">:</Text>
-                  <Text className="countdown-num">{this.padZero(countdown.seconds)}</Text>
-                </View>
+          {displayCats.length > 0 && (
+            <View className="section-card category-section">
+              <View className="category-grid">
+                {displayCats.map((cat) => (
+                  <View key={cat.id} className="category-item" onClick={() => this.goToCategory(cat.id)}>
+                    <View className="category-icon-circle">
+                      <Text style={{ fontSize: '28px' }}>{CAT_EMOJIS[cat.categoryName] || '📦'}</Text>
+                    </View>
+                    <Text className="category-name">{cat.categoryName}</Text>
+                  </View>
+                ))}
               </View>
-              <Text className="more-link" onClick={this.goToProductList}>更多 ›</Text>
             </View>
-            <ScrollView scrollX className="flash-scroll">
-              {flashProducts.map((product) => (
-                <View key={product.id} className="flash-card" onClick={() => this.goToProductDetail(product.id)}>
-                  {failedImages.has(product.id) || !product.mainImage ? (
-                    <View className="flash-img" style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}>
-                      <Text style={{ fontSize: '24px', color: '#999', fontWeight: 'bold' }}>{(product.productName || '?')[0]}</Text>
-                    </View>
-                  ) : (
-                    <Image src={product.mainImage} mode="aspectFill" className="flash-img" onError={() => this.handleImageError(product.id)} />
-                  )}
-                  <Text className="flash-name" numberOfLines={1}>{product.productName}</Text>
-                  <Text className="flash-price">¥{product.salePrice}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
+          )}
 
-          {/* Hot Recommendations */}
-          <View className="section-card recommend-section">
-            <View className="section-header">
-              <Text className="section-title">热卖推荐</Text>
-              <Text className="more-link" onClick={this.goToProductList}>更多 ›</Text>
-            </View>
-            <View className="recommend-grid">
-              {hotProducts.map((product) => (
-                <View key={product.id} className="recommend-card" onClick={() => this.goToProductDetail(product.id)}>
-                  {failedImages.has(product.id) || !product.mainImage ? (
-                    <View className="recommend-img" style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}>
-                      <Text style={{ fontSize: '28px', color: '#999', fontWeight: 'bold' }}>{(product.productName || '?')[0]}</Text>
-                    </View>
-                  ) : (
-                    <Image src={product.mainImage} mode="aspectFill" className="recommend-img" onError={() => this.handleImageError(product.id)} />
-                  )}
-                  <View className="recommend-info">
-                    <Text className="recommend-name" numberOfLines={2}>{product.productName}</Text>
-                    <View className="recommend-bottom">
-                      <View className="recommend-price-wrap">
-                        <Text className="recommend-price">¥</Text>
-                        <Text className="recommend-price-val">{product.salePrice}</Text>
-                      </View>
-                      <View className="add-cart-btn" onClick={(e) => this.addToCart(product, e)}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                          <circle cx="9" cy="21" r="1.5" fill="#fff" />
-                          <circle cx="20" cy="21" r="1.5" fill="#fff" />
-                          <path d="M1 1H5L7.68 14.39C7.78 14.85 8.19 15.18 8.66 15.18H19.4C19.87 15.18 20.28 14.85 20.38 14.39L22 6H6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </View>
-                    </View>
+          {/* Flash Sale / Seckill */}
+          {flashProducts.length > 0 && (
+            <View className="section-card flash-section">
+              <View className="section-header">
+                <View className="section-header-left">
+                  <Text className="flash-title">限时秒杀</Text>
+                  <View className="countdown-wrap">
+                    <Text className="countdown-num">{this.padZero(countdown.hours)}</Text>
+                    <Text className="countdown-sep">:</Text>
+                    <Text className="countdown-num">{this.padZero(countdown.minutes)}</Text>
+                    <Text className="countdown-sep">:</Text>
+                    <Text className="countdown-num">{this.padZero(countdown.seconds)}</Text>
                   </View>
                 </View>
-              ))}
+              </View>
+              <ScrollView scrollX className="flash-scroll">
+                {flashProducts.map((product) => {
+                  const seckillPrice = (product.salePrice * 0.6).toFixed(2)
+                  const soldPercent = Math.min(95, Math.round(Math.random() * 60 + 30))
+                  return (
+                    <View key={product.id} className="seckill-card" onClick={() => this.goToProductDetail(product.id)}>
+                      {this.renderProductImage(product, 'seckill-card-img')}
+                      <View className="seckill-card-body">
+                        <Text className="seckill-card-name" numberOfLines={1}>{product.productName}</Text>
+                        <View className="seckill-card-prices">
+                          <Text className="seckill-card-seckill">¥{seckillPrice}</Text>
+                          <Text className="seckill-card-original">¥{product.salePrice}</Text>
+                        </View>
+                        <View className="seckill-progress-wrap">
+                          <View className="seckill-progress-bar" style={{ width: `${soldPercent}%` }} />
+                        </View>
+                        <Text className="seckill-progress-text">已抢{soldPercent}%</Text>
+                        <View className="seckill-card-btn" onClick={(e) => this.addToCart(product, e)}>
+                          <Text className="seckill-card-btn-text">马上抢</Text>
+                        </View>
+                      </View>
+                    </View>
+                  )
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Hot / Popular Recommendations */}
+          {hotProducts.length > 0 && (
+            <View className="section-card recommend-section">
+              <View className="section-header">
+                <Text className="section-title">人气推荐</Text>
+              </View>
+              <View className="recommend-grid">
+                {hotProducts.map((product) => {
+                  const soldOut = product.sellableStock !== undefined && product.sellableStock <= 0
+                  return (
+                    <View key={product.id} className="recommend-card" onClick={() => this.goToProductDetail(product.id)}>
+                      <View className="recommend-img-wrap">
+                        {this.renderProductImage(product, 'recommend-img')}
+                        {soldOut && <View className="sold-out-badge"><Text className="sold-out-text">已售罄</Text></View>}
+                      </View>
+                      <View className="recommend-info">
+                        <Text className="recommend-name" numberOfLines={2}>{product.productName}</Text>
+                        <View className="recommend-bottom">
+                          <View className="recommend-price-wrap">
+                            <Text className="recommend-price">¥</Text>
+                            <Text className="recommend-price-val">{product.salePrice}</Text>
+                          </View>
+                          {!soldOut && (
+                            <View className="add-cart-btn" onClick={(e) => this.addToCart(product, e)}>
+                              <Text style={{ color: '#fff', fontSize: '16px' }}>+</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* New Arrivals */}
+          {newProducts.length > 0 && (
+            <View className="section-card">
+              <View className="section-header">
+                <Text className="section-title">新品首发</Text>
+              </View>
+              <ScrollView scrollX className="flash-scroll">
+                {newProducts.map((product) => (
+                  <View key={product.id} className="new-arrival-card" onClick={() => this.goToProductDetail(product.id)}>
+                    {this.renderProductImage(product, 'new-arrival-img')}
+                    <Text className="new-arrival-name" numberOfLines={1}>{product.productName}</Text>
+                    <Text className="new-arrival-price">¥{product.salePrice}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* VIP Card */}
+          <View className="section-card vip-card" onClick={() => Taro.switchTab({ url: '/pages/user/index' })}>
+            <View className="vip-card-content">
+              <Text className="vip-icon">⭐</Text>
+              <View className="vip-info">
+                <Text className="vip-title">卓越会员</Text>
+                <Text className="vip-desc">享2%积分返利 · 专属优惠</Text>
+              </View>
+              <Text className="vip-arrow">›</Text>
             </View>
           </View>
+
+          {/* Personalized Recommendations */}
+          {recommendProducts.length > 0 && (
+            <View className="section-card recommend-section">
+              <View className="section-header">
+                <Text className="section-title">为你推荐</Text>
+              </View>
+              <View className="recommend-grid">
+                {recommendProducts.map((product) => {
+                  const soldOut = product.sellableStock !== undefined && product.sellableStock <= 0
+                  return (
+                    <View key={product.id} className="recommend-card" onClick={() => this.goToProductDetail(product.id)}>
+                      <View className="recommend-img-wrap">
+                        {this.renderProductImage(product, 'recommend-img')}
+                        {soldOut && <View className="sold-out-badge"><Text className="sold-out-text">已售罄</Text></View>}
+                      </View>
+                      <View className="recommend-info">
+                        <Text className="recommend-name" numberOfLines={2}>{product.productName}</Text>
+                        <View className="recommend-bottom">
+                          <View className="recommend-price-wrap">
+                            <Text className="recommend-price">¥</Text>
+                            <Text className="recommend-price-val">{product.salePrice}</Text>
+                          </View>
+                          {!soldOut && (
+                            <View className="add-cart-btn" onClick={(e) => this.addToCart(product, e)}>
+                              <Text style={{ color: '#fff', fontSize: '16px' }}>+</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )}
 
           {/* Footer */}
           <View className="home-footer">

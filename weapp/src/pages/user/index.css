@@ -1,5 +1,5 @@
 /* ==========================================
-   User Page — Sam's Club Style
+   User/Mine Page — Enhanced Styles
    ========================================== */
 
 .user-page {
@@ -13,27 +13,60 @@
   height: 100vh;
 }
 
-/* Profile Banner */
+/* Loading */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 0;
+}
+
+/* ==========================================
+   Profile Banner — Logged In
+   ========================================== */
 .profile-banner {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  padding: 40px var(--spacing-lg) var(--spacing-xxl);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 60%, #4FC3F7 100%);
+  padding: 48px var(--spacing-xxl) var(--spacing-xxl);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: -10%;
+  width: 120%;
+  height: 60px;
+  background: var(--color-bg);
+  border-radius: 50% 50% 0 0;
 }
 
 .profile-info {
   display: flex;
   align-items: center;
   gap: var(--spacing-lg);
+  position: relative;
+  z-index: 1;
 }
 
-.profile-avatar {
-  width: 64px;
-  height: 64px;
+.profile-avatar-circle {
+  width: 60px;
+  height: 60px;
   border-radius: var(--radius-round);
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.profile-avatar-initial {
+  font-size: var(--font-xxl);
+  font-weight: bold;
+  color: var(--color-white);
 }
 
 .profile-meta {
@@ -45,37 +78,71 @@
   font-weight: bold;
   color: var(--color-white);
   display: block;
+  margin-bottom: var(--spacing-xs);
 }
 
-.member-badge {
+.vip-badge {
   display: inline-flex;
-  margin-top: var(--spacing-xs);
+  align-items: center;
   padding: 2px 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  border-radius: 12px;
 }
 
-.member-text {
+.vip-text {
   font-size: var(--font-xs);
-  color: var(--color-white);
-  font-weight: 500;
+  color: #5D4037;
+  font-weight: bold;
 }
 
-/* Profile Empty */
+/* ==========================================
+   Profile Banner — Not Logged In
+   ========================================== */
 .profile-banner-empty {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  padding: 60px var(--spacing-lg);
-  min-height: 220px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 60%, #4FC3F7 100%);
+  padding: 60px var(--spacing-xxl);
+  min-height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-banner-empty::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: -10%;
+  width: 120%;
+  height: 60px;
+  background: var(--color-bg);
+  border-radius: 50% 50% 0 0;
 }
 
 .profile-empty-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-empty-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-round);
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-empty-avatar-text {
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: bold;
 }
 
 .profile-empty-title {
@@ -86,14 +153,15 @@
 
 .profile-empty-btns {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
   margin-top: var(--spacing-xl);
 }
 
 .profile-login-btn {
-  padding: 10px 36px;
+  padding: 10px 40px;
   background: var(--color-white);
   border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .profile-login-text {
@@ -103,7 +171,7 @@
 }
 
 .profile-register-btn {
-  padding: 10px 36px;
+  padding: 10px 40px;
   background: transparent;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -115,7 +183,52 @@
   font-weight: bold;
 }
 
-/* Section Card */
+/* ==========================================
+   Stats Card
+   ========================================== */
+.stats-card {
+  margin: calc(-1 * var(--spacing-md)) var(--spacing-lg) 0;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  padding: var(--spacing-xl) 0;
+  position: relative;
+  z-index: 2;
+}
+
+.stats-row {
+  display: flex;
+  align-items: center;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.stat-value {
+  font-size: var(--font-xl);
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.stat-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-hint);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--color-divider);
+}
+
+/* ==========================================
+   Section Card — Shared
+   ========================================== */
 .section-card {
   margin: var(--spacing-lg);
   background: var(--color-white);
@@ -124,13 +237,14 @@
   overflow: hidden;
 }
 
-/* Order Section */
+/* ==========================================
+   Order Shortcuts Section
+   ========================================== */
 .section-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
 }
 
 .section-title {
@@ -150,9 +264,14 @@
   color: var(--color-text-hint);
 }
 
+.view-all-arrow {
+  font-size: var(--font-sm);
+  color: var(--color-text-hint);
+}
+
 .order-shortcuts {
   display: flex;
-  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xl);
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-xl);
 }
 
 .order-shortcut-item {
@@ -163,25 +282,47 @@
   gap: var(--spacing-sm);
 }
 
-.order-icon {
-  width: 36px;
-  height: 36px;
+.order-icon-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.order-icon svg {
-  width: 28px;
-  height: 28px;
+.order-icon-text {
+  font-size: 24px;
+}
+
+.order-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  background: var(--color-danger);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.order-badge-text {
+  font-size: 9px;
+  color: var(--color-white);
+  font-weight: bold;
 }
 
 .order-label {
-  font-size: var(--font-sm);
+  font-size: var(--font-xs);
   color: var(--color-text-secondary);
 }
 
-/* Menu Section */
+/* ==========================================
+   Menu Section
+   ========================================== */
 .menu-section {
   padding: 0 var(--spacing-lg);
 }
@@ -191,7 +332,7 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: var(--spacing-lg) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .menu-item:last-child {
@@ -199,13 +340,18 @@
 }
 
 .menu-icon-wrap {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #E3F2FD;
   border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.menu-icon-text {
+  font-size: 18px;
 }
 
 .menu-text {
@@ -214,7 +360,14 @@
   color: var(--color-text-primary);
 }
 
-/* Logout */
+.menu-arrow {
+  font-size: var(--font-base);
+  color: var(--color-border);
+}
+
+/* ==========================================
+   Logout
+   ========================================== */
 .logout-wrap {
   padding: var(--spacing-lg) var(--spacing-xxl) var(--spacing-xxl);
 }
@@ -226,6 +379,7 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   text-align: center;
+  box-shadow: var(--shadow-card);
 }
 
 .logout-text {
@@ -233,7 +387,9 @@
   color: var(--color-text-hint);
 }
 
-/* Auth Pages */
+/* ==========================================
+   Auth Pages
+   ========================================== */
 .auth-page {
   width: 100%;
   min-height: 100vh;
@@ -246,6 +402,22 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: 40px;
+}
+
+.auth-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-round);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-logo-text {
+  font-size: var(--font-xxl);
+  color: var(--color-white);
+  font-weight: bold;
 }
 
 .auth-title {
@@ -276,6 +448,11 @@
   border-radius: var(--radius-lg);
 }
 
+.auth-field-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
 .auth-input {
   flex: 1;
   font-size: var(--font-base);
@@ -285,10 +462,11 @@
 
 .auth-submit {
   padding: 14px 0;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
   border-radius: 24px;
   text-align: center;
   margin-top: var(--spacing-sm);
+  box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3);
 }
 
 .auth-submit-text {
