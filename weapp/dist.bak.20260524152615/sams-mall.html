@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>山姆会员商店</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #0056B3;
+  --primary-light: #E3F2FD;
+  --accent: #FF4D4F;
+  --bg: #F5F5F5;
+  --white: #FFFFFF;
+  --text: #333333;
+  --text-secondary: #666666;
+  --text-hint: #999999;
+  --divider: #F0F0F0;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ========== Header ========== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #0056B3 0%, #0078E7 100%);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.header-logo svg { width: 24px; height: 24px; }
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border-radius: 20px;
+  padding: 8px 14px;
+}
+.search-bar svg { width: 16px; height: 16px; flex-shrink: 0; color: #999; }
+.search-bar input {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  width: 100%;
+}
+.search-bar input::placeholder { color: var(--text-hint); }
+
+/* ========== Main Content ========== */
+.main-content {
+  padding-bottom: 60px;
+  overflow-y: auto;
+}
+
+/* ========== Member Card ========== */
+.member-card {
+  margin: 12px 12px 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-radius: var(--radius);
+  padding: 16px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.member-info { display: flex; align-items: center; gap: 12px; }
+.member-avatar {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.member-text h3 { font-size: 16px; margin-bottom: 2px; }
+.member-text p { font-size: 12px; opacity: 0.8; }
+.member-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* ========== Category Grid (两行) ========== */
+.category-section {
+  margin: 12px;
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.category-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 0;
+  margin-bottom: 12px;
+}
+.category-row:last-child { margin-bottom: 0; }
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+.category-icon {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  background: var(--primary-light);
+}
+.category-icon img { width: 36px; height: 36px; }
+.category-name {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ========== Flash Sale ========== */
+.section-card {
+  margin: 12px;
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .hot { color: var(--accent); }
+.section-more {
+  font-size: 13px;
+  color: var(--text-hint);
+  text-decoration: none;
+}
+
+/* Countdown */
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.countdown-num {
+  background: var(--text);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+}
+.countdown-sep {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* Flash scroll */
+.flash-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.flash-scroll::-webkit-scrollbar { display: none; }
+.flash-card {
+  flex-shrink: 0;
+  width: 100px;
+  text-align: center;
+}
+.flash-img {
+  width: 100px; height: 100px;
+  border-radius: var(--radius-sm);
+  background: var(--divider);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.flash-img img { width: 100%; height: 100%; object-fit: cover; }
+.flash-name {
+  font-size: 12px;
+  color: var(--text);
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flash-price {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent);
+  margin-top: 2px;
+}
+.flash-original {
+  font-size: 11px;
+  color: var(--text-hint);
+  text-decoration: line-through;
+}
+
+/* ========== Recommend Grid ========== */
+.recommend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.recommend-card {
+  background: white;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.recommend-img {
+  width: 100%; height: 140px;
+  background: var(--divider);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.recommend-img img { width: 100%; height: 100%; object-fit: cover; }
+.recommend-tag {
+  position: absolute;
+  top: 8px; left: 8px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.recommend-info { padding: 10px; }
+.recommend-name {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 36px;
+}
+.recommend-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.recommend-price {
+  color: var(--accent);
+  font-weight: bold;
+}
+.recommend-price .symbol { font-size: 12px; }
+.recommend-price .amount { font-size: 18px; }
+.recommend-original {
+  font-size: 11px;
+  color: var(--text-hint);
+  text-decoration: line-through;
+  margin-left: 4px;
+}
+.add-cart {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* ========== Footer ========== */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 12px;
+  color: var(--text-hint);
+}
+
+/* ========== Tab Bar ========== */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: white;
+  display: flex;
+  border-top: 1px solid #eee;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  text-decoration: none;
+  color: var(--text-hint);
+  font-size: 10px;
+}
+.tab-item.active { color: var(--primary); }
+.tab-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-logo">
+    <svg viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    山姆会员商店
+  </div>
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/>
+    </svg>
+    <input type="text" placeholder="搜索商品、品牌">
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- Member Card -->
+  <div class="member-card">
+    <div class="member-info">
+      <div class="member-avatar">⭐</div>
+      <div class="member-text">
+        <h3>卓越会员</h3>
+        <p>卓越会员 · 享2%积分返利 · 查看权益</p>
+      </div>
+    </div>
+    <button class="member-btn">查看权益</button>
+  </div>
+
+  <!-- Category Grid -->
+  <div class="category-section">
+    <div class="category-row">
+      <div class="category-item">
+        <div class="category-icon">🍎</div>
+        <span class="category-name">水果</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🥬</div>
+        <span class="category-name">蔬菜</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🥩</div>
+        <span class="category-name">肉类</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🌾</div>
+        <span class="category-name">粮油</span>
+      </div>
+    </div>
+    <div class="category-row">
+      <div class="category-item">
+        <div class="category-icon">🥛</div>
+        <span class="category-name">牛奶</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🍪</div>
+        <span class="category-name">零食</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🧃</div>
+        <span class="category-name">饮料</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🦐</div>
+        <span class="category-name">海鲜</span>
+      </div>
+    </div>
+    <div class="category-row">
+      <div class="category-item">
+        <div class="category-icon">👶</div>
+        <span class="category-name">母婴</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🧴</div>
+        <span class="category-name">个护</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">🏠</div>
+        <span class="category-name">家居</span>
+      </div>
+      <div class="category-item">
+        <div class="category-icon">📋</div>
+        <span class="category-name">全部</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Sale -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="hot">⏰</span> 限时抢购
+        <div class="countdown">
+          <span class="countdown-num" id="cd-h">02</span>
+          <span class="countdown-sep">:</span>
+          <span class="countdown-num" id="cd-m">30</span>
+          <span class="countdown-sep">:</span>
+          <span class="countdown-num" id="cd-s">00</span>
+        </div>
+      </div>
+      <a href="#" class="section-more">更多 ›</a>
+    </div>
+    <div class="flash-scroll">
+      <div class="flash-card">
+        <div class="flash-img" style="background:linear-gradient(135deg,#FF9A9E,#FECFEF);font-size:28px">🥑</div>
+        <div class="flash-name">牛油果 4个装</div>
+        <div class="flash-price">¥89.0</div>
+        <div class="flash-original">¥120.0</div>
+      </div>
+      <div class="flash-card">
+        <div class="flash-img" style="background:linear-gradient(135deg,#A1C4FD,#C2E9FB);font-size:28px">🍒</div>
+        <div class="flash-name">车厘子 500g</div>
+        <div class="flash-price">¥68.0</div>
+        <div class="flash-original">¥89.0</div>
+      </div>
+      <div class="flash-card">
+        <div class="flash-img" style="background:linear-gradient(135deg,#FBC2EB,#A6C1EE);font-size:28px">🐟</div>
+        <div class="flash-name">三文鱼刺身 100g</div>
+        <div class="flash-price">¥88.0</div>
+        <div class="flash-original">¥108.0</div>
+      </div>
+      <div class="flash-card">
+        <div class="flash-img" style="background:linear-gradient(135deg,#FFDDE1,#EE9CA7);font-size:28px">🥛</div>
+        <div class="flash-name">全脂纯牛奶 1L</div>
+        <div class="flash-price">¥18.8</div>
+        <div class="flash-original">¥24.0</div>
+      </div>
+      <div class="flash-card">
+        <div class="flash-img" style="background:linear-gradient(135deg,#D4FC79,#96E6A1);font-size:28px">🥚</div>
+        <div class="flash-name">土鸡蛋 30枚</div>
+        <div class="flash-price">¥35.0</div>
+        <div class="flash-original">¥45.0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommend -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-title"><span class="hot">🔥</span> 人气推荐</div>
+      <a href="#" class="section-more">更多 ›</a>
+    </div>
+    <div class="recommend-grid">
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+          <span style="font-size:40px">🥑</span>
+          <span class="recommend-tag">进口</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">秘鲁进口牛油果 4个装</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">25.8</span></span>
+              <span class="recommend-original">¥36.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#f093fb,#f5576c)">
+          <span style="font-size:40px">🍅</span>
+          <span class="recommend-tag">有机</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">有机大番茄 约500g</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">12.8</span></span>
+              <span class="recommend-original">¥18.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">
+          <span style="font-size:40px">🍒</span>
+          <span class="recommend-tag">进口</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">智利进口车厘子 500g</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">68.0</span></span>
+              <span class="recommend-original">¥88.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">
+          <span style="font-size:40px">🐟</span>
+          <span class="recommend-tag">空运</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">新鲜三文鱼刺身 100g</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">88.0</span></span>
+              <span class="recommend-original">¥108.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#fa709a,#fee140)">
+          <span style="font-size:40px">🥚</span>
+          <span class="recommend-tag">散养</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">土鸡蛋 30枚 散养</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">35.0</span></span>
+              <span class="recommend-original">¥45.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-card">
+        <div class="recommend-img" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">
+          <span style="font-size:40px">🥛</span>
+          <span class="recommend-tag">鲜奶</span>
+        </div>
+        <div class="recommend-info">
+          <div class="recommend-name">全脂纯牛奶 1L</div>
+          <div class="recommend-bottom">
+            <div>
+              <span class="recommend-price"><span class="symbol">¥</span><span class="amount">18.8</span></span>
+              <span class="recommend-original">¥24.0</span>
+            </div>
+            <button class="add-cart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><circle cx="9" cy="21" r="2"/><circle cx="20" cy="21" r="2"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">— 已经到底了 —</div>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <a href="#" class="tab-item active">
+    <span class="tab-icon">🏠</span>
+    <span>首页</span>
+  </a>
+  <a href="#" class="tab-item">
+    <span class="tab-icon">📂</span>
+    <span>分类</span>
+  </a>
+  <a href="#" class="tab-item">
+    <span class="tab-icon">🛒</span>
+    <span>购物车</span>
+  </a>
+  <a href="#" class="tab-item">
+    <span class="tab-icon">👤</span>
+    <span>我的</span>
+  </a>
+</div>
+
+<script>
+// Countdown timer
+let h = 2, m = 30, s = 0;
+setInterval(() => {
+  s--;
+  if (s < 0) { s = 59; m--; }
+  if (m < 0) { m = 59; h--; }
+  if (h < 0) { h = 2; m = 30; s = 0; }
+  document.getElementById('cd-h').textContent = String(h).padStart(2, '0');
+  document.getElementById('cd-m').textContent = String(m).padStart(2, '0');
+  document.getElementById('cd-s').textContent = String(s).padStart(2, '0');
+}, 1000);
+</script>
+</body>
+</html>
