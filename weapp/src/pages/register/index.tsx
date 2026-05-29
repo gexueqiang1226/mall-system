@@ -30,6 +30,7 @@ export default class Register extends Component<{}, State> {
     if (password.length < 6) { Taro.showToast({ title: '密码至少6位', icon: 'none' }); return }
     if (password !== confirmPwd) { Taro.showToast({ title: '两次密码不一致', icon: 'none' }); return }
     if (!phone.trim()) { Taro.showToast({ title: '请输入手机号', icon: 'none' }); return }
+    if (!/^1\d{10}$/.test(phone.trim())) { Taro.showToast({ title: '手机号格式不正确', icon: 'none' }); return }
     if (loading) return
     this.setState({ loading: true })
     try {
