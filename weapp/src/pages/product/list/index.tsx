@@ -63,7 +63,7 @@ export default class ProductList extends Component<{}, State> {
     try {
       const res = await api.get('/categories')
       const allCats: Category[] = res?.data || []
-      const leftCats = allCats.filter(c => c.level === 1)
+      const leftCats = allCats.filter(c => !c.parentId || c.parentId === 0)
       const firstId = initCatId || (leftCats[0]?.id ?? 0)
       this.setState({ leftCategories: leftCats, selectedLeftId: firstId }, () => {
         this.loadSubAndProducts(firstId)

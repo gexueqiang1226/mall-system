@@ -87,7 +87,7 @@ export default class Index extends Component<{}, State> {
         api.get('/products', { page: 1, size: 20, sortBy: 'soldCount', order: 'desc' }),
       ])
       const categories: Category[] = ((catRes?.data || []) as Category[])
-        .filter(c => c.level === 1)
+        .filter(c => !c.parentId || c.parentId === 0)
         .slice(0, 8)
       const products: Product[] = prodRes?.data?.items || []
       this.setState({

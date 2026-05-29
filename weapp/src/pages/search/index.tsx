@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { View, Text, Input, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -44,19 +45,19 @@ export default class Search extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const history = Taro.getStorageSync(HISTORY_KEY) || []
+    const history = getStorage(HISTORY_KEY) || []
     this.setState({ history })
   }
 
   addHistory(kw: string) {
     const hist = [kw, ...this.state.history.filter(h => h !== kw)].slice(0, 10)
     this.setState({ history: hist })
-    Taro.setStorageSync(HISTORY_KEY, hist)
+    setStorage(HISTORY_KEY, hist)
   }
 
   clearHistory() {
     this.setState({ history: [] })
-    Taro.setStorageSync(HISTORY_KEY, [])
+    setStorage(HISTORY_KEY, [])
   }
 
   async doSearch(kw?: string, reset = true) {

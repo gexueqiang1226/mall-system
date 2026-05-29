@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro'
+import { getStorage, removeStorage } from '@/utils/storage'
 
 const API_BASE_URL = 'http://localhost:8080/api'
 
@@ -20,7 +21,7 @@ class Api {
     }
 
     // 获取token
-    const token = Taro.getStorageSync('TOKEN')
+    const token = getStorage('TOKEN')
     if (token) {
       defaultHeaders['Authorization'] = `Bearer ${token}`
     }
@@ -37,8 +38,8 @@ class Api {
         return response.data
       } else if (response.statusCode === 401) {
         // 未授权，清除token并跳转登录
-        Taro.removeStorageSync('TOKEN')
-        Taro.removeStorageSync('USER_INFO')
+        removeStorage('TOKEN')
+        removeStorage('USER_INFO')
         Taro.navigateTo({
           url: '/pages/user/index',
         })

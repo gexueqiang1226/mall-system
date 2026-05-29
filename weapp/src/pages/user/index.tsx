@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -57,8 +58,8 @@ export default class UserPage extends Component<{}, State> {
   }
 
   async checkLogin() {
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    const token = Taro.getStorageSync('TOKEN')
+    const userInfo = getStorage('USER_INFO')
+    const token = getStorage('TOKEN')
     if (!userInfo || !token) {
       this.setState({ isLoggedIn: false, userInfo: null })
       return
@@ -75,7 +76,7 @@ export default class UserPage extends Component<{}, State> {
       const profile = profileRes?.data
       if (profile) {
         this.setState({ userInfo: profile })
-        Taro.setStorageSync('USER_INFO', profile)
+        setStorage('USER_INFO', profile)
       }
     } catch {}
   }
@@ -106,9 +107,9 @@ export default class UserPage extends Component<{}, State> {
       content: '确定要退出登录吗？',
       success: (res) => {
         if (res.confirm) {
-          Taro.removeStorageSync('TOKEN')
-          Taro.removeStorageSync('USER_INFO')
-          Taro.removeStorageSync('USER_ID')
+          removeStorage('TOKEN')
+          removeStorage('USER_INFO')
+          removeStorage('USER_ID')
           this.setState({ isLoggedIn: false, userInfo: null })
           Taro.showToast({ title: '已退出登录', icon: 'success' })
         }

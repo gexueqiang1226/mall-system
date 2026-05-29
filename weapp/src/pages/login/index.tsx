@@ -34,9 +34,9 @@ export default class Login extends Component<{}, State> {
     try {
       const res = await api.post('/auth/login', { username: username.trim(), password })
       const { token, user } = res?.data || {}
-      Taro.setStorageSync('TOKEN', token)
-      Taro.setStorageSync('USER_INFO', user)
-      Taro.setStorageSync('USER_ID', user?.id)
+      setStorage('TOKEN', token)
+      setStorage('USER_INFO', user)
+      setStorage('USER_ID', user?.id)
       Taro.showToast({ title: '登录成功', icon: 'success' })
       setTimeout(() => {
         Taro.switchTab({ url: '/pages/user/index' })

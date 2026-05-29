@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -34,8 +35,8 @@ export default class Cart extends Component<{}, State> {
   }
 
   componentDidShow() {
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    const userInfo = getStorage('USER_INFO')
+    const userId = userInfo?.id || getStorage('USER_ID') || 0
     this.setState({ userId }, () => {
       if (userId) this.loadCart()
     })
@@ -127,7 +128,7 @@ export default class Cart extends Component<{}, State> {
       return
     }
     const items = checked.map(i => ({ productId: i.productId, quantity: i.quantity, skuId: i.skuId }))
-    Taro.setStorageSync('CHECKOUT_ITEMS', items)
+    setStorage('CHECKOUT_ITEMS', items)
     Taro.navigateTo({ url: '/pages/order/list/index?fromCart=1' })
   }
 

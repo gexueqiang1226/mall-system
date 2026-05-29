@@ -1,6 +1,7 @@
 package com.mall.category.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public class Category {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    @JsonProperty("name")
     private String categoryName;
     private Long parentId;
     private Integer sortOrder;

@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage } from '@/utils/storage'
 import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -121,7 +122,7 @@ export default class ProductDetail extends Component<{}, State> {
       // 检查收藏
       let isFavorite = false
       try {
-        const userId = Taro.getStorageSync('USER_INFO')?.id || Taro.getStorageSync('USER_ID')
+        const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
         if (userId) {
           const favRes = await api.get('/favorites/check', { userId, productId: id })
           isFavorite = favRes?.data?.isFavorite || false
@@ -193,7 +194,7 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   async addToCart() {
-    const userId = Taro.getStorageSync('USER_INFO')?.id || Taro.getStorageSync('USER_ID')
+    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
       return
@@ -213,7 +214,7 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   buyNow() {
-    const userId = Taro.getStorageSync('USER_INFO')?.id || Taro.getStorageSync('USER_ID')
+    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
       return
@@ -226,7 +227,7 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   async toggleFavorite() {
-    const userId = Taro.getStorageSync('USER_INFO')?.id || Taro.getStorageSync('USER_ID')
+    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
       return

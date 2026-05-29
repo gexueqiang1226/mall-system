@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage } from '@/utils/storage'
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -71,8 +72,8 @@ export default class MyOrders extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    const userInfo = getStorage('USER_INFO')
+    const userId = userInfo?.id || getStorage('USER_ID') || 0
     const params = Taro.getCurrentInstance().router?.params || {}
     const status = params.status
     const tabIdx = status !== undefined ? TABS.findIndex(t => t.status === String(status)) : 0

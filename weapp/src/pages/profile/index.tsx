@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { getStorage, setStorage, removeStorage } from '@/utils/storage'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -24,8 +25,8 @@ export default class Profile extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    const userInfo = getStorage('USER_INFO')
+    const userId = userInfo?.id || getStorage('USER_ID') || 0
     if (!userId) { Taro.navigateTo({ url: '/pages/login/index' }); return }
     this.setState({
       userId,
@@ -43,8 +44,8 @@ export default class Profile extends Component<{}, State> {
     this.setState({ saving: true })
     try {
       await api.put('/user/profile', { userId, nickname: nickname.trim(), phone: phone.trim(), email: email.trim() })
-      const userInfo = Taro.getStorageSync('USER_INFO') || {}
-      Taro.setStorageSync('USER_INFO', { ...userInfo, nickname: nickname.trim(), phone: phone.trim(), email: email.trim() })
+      const userInfo = getStorage('USER_INFO') || {}
+      setStorage('USER_INFO', { ...userInfo, nickname: nickname.trim(), phone: phone.trim(), email: email.trim() })
       Taro.showToast({ title: '保存成功', icon: 'success' })
       this.setState({ saving: false })
     } catch {

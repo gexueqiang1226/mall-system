@@ -35,9 +35,9 @@ export default class Register extends Component<{}, State> {
     try {
       const res = await api.post('/auth/register', { username: username.trim(), password, phone: phone.trim() })
       const { token, user } = res?.data || {}
-      Taro.setStorageSync('TOKEN', token)
-      Taro.setStorageSync('USER_INFO', user)
-      Taro.setStorageSync('USER_ID', user?.id)
+      setStorage('TOKEN', token)
+      setStorage('USER_INFO', user)
+      setStorage('USER_ID', user?.id)
       Taro.showToast({ title: '注册成功', icon: 'success' })
       setTimeout(() => {
         Taro.switchTab({ url: '/pages/user/index' })
