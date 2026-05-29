@@ -48,4 +48,23 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
         this.updateById(coupon);
         return coupon;
     }
+
+    @Override
+    public Coupon claimCoupon(Long couponId, Long userId) {
+        Coupon coupon = this.getById(couponId);
+        if (coupon == null) {
+            throw new RuntimeException("NOT_FOUND");
+        }
+        // 如果优惠券已绑定用户且不是当前用户，不能重复领取
+        if (coupon.getUserId() != null && coupon.getUserId().equals(userId)) {
+            throw new RuntimeException("ALREADY_CLAIMED");
+        }
+        // 如果优惠券未绑定用户，绑定当前用户
+        if (coupon.getUserId() == null && userId != null) {
+            coupon.setUserId(userId);
+            coupon.setStatus(0); // 确保状态为未使用
+            this.updateById(coupon);
+        }
+        return coupon;
+    }
 }

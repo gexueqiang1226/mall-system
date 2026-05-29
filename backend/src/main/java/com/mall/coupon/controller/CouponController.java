@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -30,6 +31,27 @@ public class CouponController {
             @RequestParam BigDecimal amount) {
         List<Coupon> list = couponService.listAvailable(userId, amount);
         return ResponseResult.success(list);
+    }
+
+    /** 领取优惠券 */
+    @PostMapping("/api/coupons/claim/{id}")
+    public ResponseResult claimCoupon(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, Object> body) {
+        try {
+            Long userId = body != null && body.get("userId") != null
+                    ? Long.valueOf(body.get("userId").toString()) : null;
+            Coupon coupon = couponService.claimCoupon(id, userId);
+            return ResponseResult.success(coupon);
+        } catch (RuntimeException e) {
+            if ("NOT_FOUND".equals(e.getMessage())) {
+                return ResponseResult.fail(404, "优惠券不存在");
+            }
+            if ("ALREADY_CLAIMED".equals(e.getMessage())) {
+                return ResponseResult.fail(400, "已领取过该优惠券");
+            }
+            return ResponseResult.fail(400, e.getMessage());
+        }
     }
 
     @PostMapping("/api/coupons")

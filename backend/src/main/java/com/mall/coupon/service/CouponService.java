@@ -10,4 +10,5 @@ public interface CouponService extends IService<Coupon> {
     List<Coupon> listByUserIdAndStatus(Long userId, Integer status);
     List<Coupon> listAvailable(Long userId, BigDecimal amount);
     Coupon useCoupon(Long id);
+    Coupon claimCoupon(Long couponId, Long userId);
 }
