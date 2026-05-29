@@ -312,15 +312,50 @@ page {
 }
 
 /* ========== Taro H5 TabBar Override ========== */
-.taro-tabbar-bar {
-  border-top: 1px solid #eee !important;
-  padding-bottom: var(--safe-bottom) !important;
-  max-width: 430px !important;
-  height: 50px !important;
+/* H5端TabBar用WeUI渲染，需覆盖为sams-mall风格 */
+.weui-tabbar__icon { display: none !important; }
+.weui-tabbar__item > span {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
-
-.taro-tabbar-tab-item {
+.weui-tabbar__item > span::before {
+  display: block !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  margin-bottom: 1px !important;
+  filter: saturate(0) !important;
+  opacity: 0.5 !important;
+  transition: all 0.2s ease !important;
+}
+.weui-tabbar__item:nth-child(1) > span::before { content: '🏠'; }
+.weui-tabbar__item:nth-child(2) > span::before { content: '📂'; }
+.weui-tabbar__item:nth-child(3) > span::before { content: '🛒'; }
+.weui-tabbar__item:nth-child(4) > span::before { content: '👤'; }
+.weui-tabbar__item.weui-bar__item_on > span::before {
+  filter: saturate(1) !important;
+  opacity: 1 !important;
+  transform: scale(1.1) !important;
+}
+.weui-tabbar, .weui-tabbar.taro-tabbar__border-black {
+  border-top: 1px solid #eee !important;
+  background: #ffffff !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.04) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+.weui-tabbar__label {
   font-size: 10px !important;
+  font-weight: 500 !important;
+  color: #999 !important;
+}
+.weui-tabbar__item.weui-bar__item_on .weui-tabbar__label {
+  color: #0056B3 !important;
+  font-weight: 700 !important;
+}
+.weui-tabbar__item {
+  padding: 5px 0 2px !important;
 }
 
 
@@ -926,3 +961,67 @@ body {
 .poster-preview-card canvas { border-radius: 8px; }
 .poster-preview-tip { font-size: 13px; color: var(--text-hint); margin-top: 12px; }
 .poster-preview-close { margin-top: 12px; padding: 8px 24px; background: var(--primary); color: white; border: none; border-radius: 20px; font-size: 14px; cursor: pointer; }
+
+/* ========== Taro H5 TabBar 美化覆盖 ========== */
+/* 隐藏透明1x1占位图标（Taro编译后会内联透明图） */
+.weui-tabbar__icon {
+  display: none !important;
+}
+
+/* 用伪元素emoji替代图标 */
+.weui-tabbar__item span {
+  position: relative;
+}
+
+.weui-tabbar__item span::before {
+  content: '🏠';
+  display: block;
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: saturate(0);
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.weui-tabbar__item:nth-child(1) span::before { content: '🏠'; }
+.weui-tabbar__item:nth-child(2) span::before { content: '📂'; }
+.weui-tabbar__item:nth-child(3) span::before { content: '🛒'; }
+.weui-tabbar__item:nth-child(4) span::before { content: '👤'; }
+
+/* Active状态: 彩色+放大 */
+.weui-tabbar__item.weui-bar__item_on span::before {
+  filter: saturate(1);
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* TabBar整体 */
+.taro-tabbar__border-black {
+  border-top: 1px solid #eee !important;
+  background: #fff !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.04) !important;
+}
+
+/* Tab文字美化 */
+.weui-tabbar__label {
+  font-size: 10px !important;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.weui-tabbar__item.weui-bar__item_on .weui-tabbar__label {
+  font-weight: 700;
+}
+
+/* Tab item间距 */
+.weui-tabbar__item {
+  padding: 4px 0 2px !important;
+}
+
+/* Safe area */
+.weui-tabbar {
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
