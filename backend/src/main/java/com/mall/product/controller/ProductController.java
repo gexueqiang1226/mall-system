@@ -132,6 +132,19 @@ public class ProductController {
         return ResponseResult.success("商品下架成功");
     }
 
+    // Admin - 删除商品
+    @DeleteMapping("/admin/api/products/{id}")
+    public ResponseResult deleteProduct(@PathVariable Long id) {
+        Product p = productService.getById(id);
+        if (p == null) return ResponseResult.fail(404, "商品不存在");
+        // 软删除：设为下架+标记deleted
+        p.setIsOnline(0);
+        p.setOfflineTime(LocalDateTime.now());
+        p.setStatus(4); // 4=已删除
+        productService.updateById(p);
+        return ResponseResult.success("商品删除成功");
+    }
+
     // Admin - 更新库存
     @PutMapping("/admin/api/products/{id}/inventory")
     public ResponseResult updateInventory(@PathVariable Long id, @RequestBody Map<String, Object> body) {

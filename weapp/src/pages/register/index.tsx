@@ -1,89 +1,128 @@
 import { Component } from 'react'
-import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, Input } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
-interface RegisterState {
+interface State {
   username: string
   password: string
-  confirmPassword: string
+  confirmPwd: string
   phone: string
+  showPwd: boolean
   loading: boolean
 }
 
-export default class Register extends Component<{}, RegisterState> {
-  constructor(props) {
-    super(props)
-    this.state = { username: '', password: '', confirmPassword: '', phone: '', loading: false }
+export default class Register extends Component<{}, State> {
+  state: State = {
+    username: '',
+    password: '',
+    confirmPwd: '',
+    phone: '',
+    showPwd: false,
+    loading: false,
   }
 
-  handleRegister = async () => {
-    const { username, password, confirmPassword, phone } = this.state
-    if (!username || !password) {
-      Taro.showToast({ title: '请输入用户名和密码', icon: 'error' })
-      return
-    }
-    if (password !== confirmPassword) {
-      Taro.showToast({ title: '两次密码不一致', icon: 'error' })
-      return
-    }
+  async handleRegister() {
+    const { username, password, confirmPwd, phone, loading } = this.state
+    if (!username.trim()) { Taro.showToast({ title: '请输入用户名', icon: 'none' }); return }
+    if (!password) { Taro.showToast({ title: '请输入密码', icon: 'none' }); return }
+    if (password.length < 6) { Taro.showToast({ title: '密码至少6位', icon: 'none' }); return }
+    if (password !== confirmPwd) { Taro.showToast({ title: '两次密码不一致', icon: 'none' }); return }
+    if (!phone.trim()) { Taro.showToast({ title: '请输入手机号', icon: 'none' }); return }
+    if (loading) return
     this.setState({ loading: true })
     try {
-      const response = await api.post('/auth/register', { username, password, phone })
-      if (response.code === 0) {
-        Taro.showToast({ title: '注册成功，请登录', icon: 'success' })
-        setTimeout(() => Taro.navigateTo({ url: '/pages/login/index' }), 1000)
-      } else {
-        Taro.showToast({ title: response.message || '注册失败', icon: 'error' })
-      }
-    } catch (error) {
-      Taro.showToast({ title: '注册失败', icon: 'error' })
+      const res = await api.post('/auth/register', { username: username.trim(), password, phone: phone.trim() })
+      const { token, user } = res?.data || {}
+      Taro.setStorageSync('TOKEN', token)
+      Taro.setStorageSync('USER_INFO', user)
+      Taro.setStorageSync('USER_ID', user?.id)
+      Taro.showToast({ title: '注册成功', icon: 'success' })
+      setTimeout(() => {
+        Taro.switchTab({ url: '/pages/user/index' })
+      }, 800)
+    } catch (e: any) {
+      Taro.showToast({ title: e?.message || '注册失败', icon: 'none' })
+      this.setState({ loading: false })
     }
-    this.setState({ loading: false })
   }
 
-  goLogin = () => Taro.navigateBack()
-  goBack = () => Taro.navigateBack()
-
   render() {
-    const { username, password, confirmPassword, phone, loading } = this.state
+    const { username, password, confirmPwd, phone, showPwd, loading } = this.state
+
     return (
-      <View className="login-page">
-        <View className="login-header">
-          <View className="back-btn" onClick={this.goBack}>
-            <Text className="back-text">‹</Text>
+      <View className='auth-page'>
+        <View className='auth-logo-wrap'>
+          <View className='auth-logo'>
+            <Text className='auth-logo-text'>S</Text>
           </View>
-          <Text className="header-title">注册</Text>
-          <View style={{ width: '32px' }} />
+          <Text className='auth-brand'>SAM'S CLUB</Text>
+          <Text className='auth-welcome'>创建账号</Text>
         </View>
-        <View className="login-body">
-          <View className="login-logo">
-            <View className="logo-circle">
-              <Text className="logo-text">S</Text>
-            </View>
-            <Text className="login-welcome">创建账号</Text>
-            <Text className="login-subtitle">加入我们，享受会员专属权益</Text>
+
+        <View className='auth-form'>
+          <View className='input-group'>
+            <View className='input-icon'>👤</View>
+            <Input
+              className='auth-input'
+              placeholder='请输入用户名'
+              value={username}
+              onInput={e => this.setState({ username: e.detail.value })}
+            />
           </View>
-          <View className="login-form">
-            <View className="form-field">
-              <Input className="form-input" placeholder="请输入用户名" value={username} onInput={(e) => this.setState({ username: e.detail.value })} />
+
+          <View className='input-group'>
+            <View className='input-icon'>🔒</View>
+            <Input
+              className='auth-input'
+              placeholder='请输入密码（至少6位）'
+              password={!showPwd}
+              value={password}
+              onInput={e => this.setState({ password: e.detail.value })}
+            />
+            <View className='pwd-toggle' onClick={() => this.setState({ showPwd: !showPwd })}>
+              <Text>{showPwd ? '🙈' : '👁️'}</Text>
             </View>
-            <View className="form-field">
-              <Input className="form-input" placeholder="请输入密码" type="password" value={password} onInput={(e) => this.setState({ password: e.detail.value })} />
-            </View>
-            <View className="form-field">
-              <Input className="form-input" placeholder="请确认密码" type="password" value={confirmPassword} onInput={(e) => this.setState({ confirmPassword: e.detail.value })} />
-            </View>
-            <View className="form-field">
-              <Input className="form-input" placeholder="手机号（选填）" type="number" value={phone} onInput={(e) => this.setState({ phone: e.detail.value })} />
-            </View>
-            <View className={`login-btn ${loading ? 'disabled' : ''}`} onClick={loading ? undefined : this.handleRegister}>
-              <Text className="login-btn-text">{loading ? '注册中...' : '注 册'}</Text>
-            </View>
-            <View className="login-links">
-              <Text className="link-text" onClick={this.goLogin}>已有账号？去登录</Text>
-            </View>
+          </View>
+
+          <View className='input-group'>
+            <View className='input-icon'>🔒</View>
+            <Input
+              className='auth-input'
+              placeholder='请确认密码'
+              password={!showPwd}
+              value={confirmPwd}
+              onInput={e => this.setState({ confirmPwd: e.detail.value })}
+            />
+          </View>
+
+          <View className='input-group'>
+            <View className='input-icon'>📱</View>
+            <Input
+              className='auth-input'
+              placeholder='请输入手机号'
+              type='number'
+              value={phone}
+              onInput={e => this.setState({ phone: e.detail.value })}
+            />
+          </View>
+
+          <View
+            className={`auth-submit-btn ${loading ? 'disabled' : ''}`}
+            onClick={this.handleRegister.bind(this)}
+          >
+            <Text>{loading ? '注册中...' : '注册'}</Text>
+          </View>
+
+          <View className='auth-switch'>
+            <Text className='auth-switch-text'>已有账号？</Text>
+            <Text
+              className='auth-switch-link'
+              onClick={() => Taro.navigateTo({ url: '/pages/login/index' })}
+            >
+              去登录
+            </Text>
           </View>
         </View>
       </View>

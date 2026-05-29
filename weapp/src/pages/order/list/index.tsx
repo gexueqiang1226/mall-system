@@ -1,576 +1,355 @@
 import { Component } from 'react'
-import { View, Text, Image, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import { View, Text, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
 
-/* ---------- types ---------- */
-
-interface AddressInfo {
+interface Address {
   id: number
-  recipientName: string
-  recipientPhone: string
-  province?: string
-  city?: string
-  district?: string
-  detailAddress: string
-  isDefault?: number
+  receiver: string
+  phone: string
+  province: string
+  city: string
+  district: string
+  detail: string
+  isDefault: boolean
 }
 
-interface OrderItem {
-  id: number
-  productId: number
-  productName: string
-  mainImage: string
-  salePrice: number
-  skuPrice?: number
-  quantity: number
-  checked: number
-  skuSpecs?: string
-}
-
-interface CouponInfo {
+interface Coupon {
   id: number
   couponName: string
-  discountAmount: number
+  couponType: string
+  discountValue: number
   minAmount: number
-  description?: string
+  status: number
 }
 
-interface OrderListState {
-  loading: boolean
-  address: AddressInfo | null
-  items: OrderItem[]
-  coupons: CouponInfo[]
-  selectedCoupon: CouponInfo | null
-  showCouponPicker: boolean
+interface CheckoutItem {
+  productId: number
+  quantity: number
+  skuId?: number
+  productName?: string
+  mainImage?: string
+  price?: number
+  salePrice?: number
+}
+
+interface State {
+  addresses: Address[]
+  selectedAddress: Address | null
+  coupons: Coupon[]
+  selectedCoupon: Coupon | null
   pointsBalance: number
   usePoints: boolean
-  failedImages: Set<number>
+  items: CheckoutItem[]
+  remark: string
+  showAddressPicker: boolean
+  showCouponPicker: boolean
+  userId: number
+  submitting: boolean
 }
 
-/* ---------- discount tiers ---------- */
-
-const DISCOUNT_TIERS = [
-  { threshold: 999, discount: 120 },
-  { threshold: 499, discount: 50 },
-  { threshold: 199, discount: 20 },
-]
-
-/* ---------- component ---------- */
-
-export default class OrderList extends Component<{}, OrderListState> {
-  constructor(props) {
-    super(props)
-    this.state = {
-      loading: true,
-      address: null,
-      items: [],
-      coupons: [],
-      selectedCoupon: null,
-      showCouponPicker: false,
-      pointsBalance: 0,
-      usePoints: false,
-      failedImages: new Set(),
-    }
+export default class OrderList extends Component<{}, State> {
+  state: State = {
+    addresses: [],
+    selectedAddress: null,
+    coupons: [],
+    selectedCoupon: null,
+    pointsBalance: 0,
+    usePoints: false,
+    items: [],
+    remark: '',
+    showAddressPicker: false,
+    showCouponPicker: false,
+    userId: 0,
+    submitting: false,
   }
 
   componentDidMount() {
-    this.init()
-  }
-
-  componentDidShow() {
-    // If returning from address selection page, reload address
-    const selectedAddr = Taro.getStorageSync('SELECTED_ADDRESS')
-    if (selectedAddr) {
-      this.setState({ address: selectedAddr })
-      Taro.removeStorageSync('SELECTED_ADDRESS')
-    }
-  }
-
-  getUserId = (): number | null => {
     const userInfo = Taro.getStorageSync('USER_INFO')
-    return userInfo?.userId || null
-  }
-
-  init = async () => {
-    const userId = this.getUserId()
+    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
     if (!userId) {
-      Taro.showToast({ title: '请先登录', icon: 'error' })
-      setTimeout(() => Taro.switchTab({ url: '/pages/user/index' }), 1000)
+      Taro.redirectTo({ url: '/pages/login/index' })
       return
     }
+    const params = Taro.getCurrentInstance().router?.params || {}
+    let items: CheckoutItem[] = []
+    if (params.fromCart) {
+      items = Taro.getStorageSync('CHECKOUT_ITEMS') || []
+    } else if (params.productId) {
+      items = [{
+        productId: Number(params.productId),
+        quantity: Number(params.quantity) || 1,
+        skuId: params.skuId ? Number(params.skuId) : undefined,
+      }]
+    }
+    this.setState({ userId, items }, () => this.loadData())
+  }
+
+  async loadData() {
+    const { userId, items } = this.state
+    const total = this.calcItemsTotal()
     try {
-      this.setState({ loading: true })
-      await Promise.all([
-        this.loadAddress(userId),
-        this.loadCartItems(userId),
-        this.loadPoints(userId),
+      const [addrRes, couponRes, pointsRes] = await Promise.all([
+        api.get('/addresses', { userId }),
+        api.get('/coupons/available', { userId, amount: total }),
+        api.get('/points/balance', { userId }),
       ])
-      this.setState({ loading: false })
-    } catch (err) {
-      console.error('Init order page failed:', err)
-      this.setState({ loading: false })
-    }
-  }
+      const addresses: Address[] = addrRes?.data || []
+      const defaultAddr = addresses.find(a => a.isDefault) || addresses[0] || null
+      const coupons: Coupon[] = couponRes?.data || []
+      const pointsBalance = pointsRes?.data?.balance || 0
 
-  loadAddress = async (userId: number) => {
-    try {
-      const res = await api.get('/addresses', { userId })
-      const addresses: AddressInfo[] = res.data || res || []
-      const defaultAddr = addresses.find((a) => a.isDefault === 1) || addresses[0] || null
-      this.setState({ address: defaultAddr })
-    } catch (err) {
-      console.error('Load address failed:', err)
-    }
-  }
-
-  loadCartItems = async (userId: number) => {
-    try {
-      const res = await api.get('/cart', { userId })
-      const allItems: OrderItem[] = res.data || res || []
-      const checkedItems = allItems.filter((item) => item.checked === 1)
-      this.setState({ items: checkedItems }, () => {
-        if (checkedItems.length > 0) {
-          this.loadCoupons(userId)
-        }
-      })
-    } catch (err) {
-      console.error('Load cart items failed:', err)
-    }
-  }
-
-  loadCoupons = async (userId: number) => {
-    const goodsTotal = this.getGoodsTotal()
-    try {
-      const res = await api.get('/coupons/available', { userId, amount: goodsTotal })
-      const coupons: CouponInfo[] = res.data || res || []
-      this.setState({ coupons })
-    } catch (err) {
-      console.error('Load coupons failed:', err)
-    }
-  }
-
-  loadPoints = async (userId: number) => {
-    try {
-      const res = await api.get('/points/balance', { userId })
-      const balance = res.data?.balance || res.data || res || 0
-      this.setState({ pointsBalance: Number(balance) })
-    } catch (err) {
-      console.error('Load points failed:', err)
-    }
-  }
-
-  /* ---------- computed values ---------- */
-
-  getUnitPrice = (item: OrderItem): number => {
-    return item.skuPrice || item.salePrice || 0
-  }
-
-  getGoodsTotal = (): number => {
-    return this.state.items.reduce(
-      (sum, item) => sum + this.getUnitPrice(item) * item.quantity,
-      0
-    )
-  }
-
-  getShippingFee = (): number => {
-    const goodsTotal = this.getGoodsTotal()
-    return goodsTotal >= 99 ? 0 : 10
-  }
-
-  getFullDiscount = (): number => {
-    const goodsTotal = this.getGoodsTotal()
-    let discount = 0
-    for (const tier of DISCOUNT_TIERS) {
-      if (goodsTotal >= tier.threshold) {
-        discount = tier.discount
-        break
+      // 若items只有productId，补充商品信息
+      if (items.length > 0 && !items[0].productName) {
+        try {
+          const enriched = await Promise.all(items.map(async it => {
+            const r = await api.get(`/products/${it.productId}`)
+            const p = r?.data
+            return { ...it, productName: p?.productName, mainImage: p?.mainImage, price: p?.salePrice, salePrice: p?.salePrice }
+          }))
+          this.setState({ items: enriched })
+        } catch {}
       }
+
+      this.setState({ addresses, selectedAddress: defaultAddr, coupons, pointsBalance })
+    } catch {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
     }
-    return discount
   }
 
-  getCouponDiscount = (): number => {
-    const { selectedCoupon } = this.state
-    if (!selectedCoupon) return 0
-    return selectedCoupon.discountAmount || 0
+  calcItemsTotal() {
+    return this.state.items.reduce((sum, i) => sum + (i.salePrice || i.price || 0) * i.quantity, 0)
   }
 
-  getPointsOffset = (): number => {
-    const { pointsBalance, usePoints } = this.state
-    if (!usePoints || pointsBalance <= 0) return 0
-    return Math.floor(pointsBalance / 100)
-  }
+  get subtotal() { return this.calcItemsTotal() }
+  get freight() { return this.subtotal >= 99 ? 0 : 10 }
+  get couponDiscount() { return this.state.selectedCoupon?.discountValue || 0 }
+  get pointsDiscount() { return this.state.usePoints ? Math.min(this.state.pointsBalance / 100, this.subtotal * 0.1) : 0 }
+  get total() { return Math.max(0, this.subtotal + this.freight - this.couponDiscount - this.pointsDiscount) }
 
-  getBestDiscount = (): { type: string; amount: number } => {
-    const fullDiscount = this.getFullDiscount()
-    const couponDiscount = this.getCouponDiscount()
-    if (fullDiscount >= couponDiscount) {
-      return { type: 'full', amount: fullDiscount }
-    }
-    return { type: 'coupon', amount: couponDiscount }
-  }
-
-  getFinalPrice = (): number => {
-    const goodsTotal = this.getGoodsTotal()
-    const shipping = this.getShippingFee()
-    const { amount: discount } = this.getBestDiscount()
-    const pointsOffset = this.getPointsOffset()
-    const final = goodsTotal + shipping - discount - pointsOffset
-    return Math.max(final, 0)
-  }
-
-  /* ---------- actions ---------- */
-
-  selectAddress = () => {
-    Taro.navigateTo({ url: '/pages/address/index?mode=select' })
-  }
-
-  openCouponPicker = () => {
-    this.setState({ showCouponPicker: true })
-  }
-
-  closeCouponPicker = () => {
-    this.setState({ showCouponPicker: false })
-  }
-
-  selectCoupon = (coupon: CouponInfo | null) => {
-    this.setState((prev) => ({
-      selectedCoupon:
-        prev.selectedCoupon && prev.selectedCoupon.id === coupon?.id ? null : coupon,
-      showCouponPicker: false,
-    }))
-  }
-
-  togglePoints = () => {
-    this.setState((prev) => ({ usePoints: !prev.usePoints }))
-  }
-
-  handleImageError = (id: number) => {
-    this.setState((prev) => {
-      const failedImages = new Set(prev.failedImages)
-      failedImages.add(id)
-      return { failedImages }
-    })
-  }
-
-  submitOrder = async () => {
-    const { address, items } = this.state
-    const userId = this.getUserId()
-
-    if (!address) {
-      Taro.showToast({ title: '请选择收货地址', icon: 'error' })
+  async submitOrder() {
+    const { selectedAddress, selectedCoupon, usePoints, userId, remark, items, submitting } = this.state
+    if (!selectedAddress) {
+      Taro.showToast({ title: '请选择收货地址', icon: 'none' })
       return
     }
-
-    if (items.length === 0) {
-      Taro.showToast({ title: '订单为空', icon: 'error' })
-      return
-    }
-
-    Taro.showLoading({ title: '提交中...' })
-
+    if (submitting) return
+    this.setState({ submitting: true })
     try {
-      const addressInfo = [
-        address.recipientName,
-        address.recipientPhone,
-        address.province || '',
-        address.city || '',
-        address.district || '',
-        address.detailAddress,
-      ].join(' ')
-
-      const orderData = {
+      const body: any = {
         userId,
-        items: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-        remark: addressInfo,
+        addressId: selectedAddress.id,
+        items: items.map(i => ({ productId: i.productId, quantity: i.quantity, skuId: i.skuId })),
+        remark,
       }
-
-      const response = await api.post('/orders', orderData)
-      Taro.hideLoading()
-
-      if (response.code === 0 || response.id) {
-        // Delete checked cart items from server
-        const deletePromises = items.map((item) =>
-          api.delete(`/cart/${item.id}`).catch(() => {})
-        )
-        await Promise.all(deletePromises)
-
-        Taro.showToast({ title: '订单已提交', icon: 'success' })
-
-        const orderId = response.data?.id || response.id || response.data
-        setTimeout(() => {
-          Taro.redirectTo({
-            url: `/pages/order/detail/index?id=${orderId}`,
-          })
-        }, 1000)
-      } else {
-        Taro.showToast({
-          title: response.message || '提交失败',
-          icon: 'error',
-        })
-      }
-    } catch (error) {
-      console.error('Order submit failed:', error)
-      Taro.hideLoading()
-      Taro.showToast({ title: '提交失败', icon: 'error' })
+      if (selectedCoupon) body.couponId = selectedCoupon.id
+      const res = await api.post('/orders', body)
+      const orderId = res?.data?.orderId
+      Taro.showToast({ title: '下单成功', icon: 'success' })
+      setTimeout(() => {
+        Taro.redirectTo({ url: `/pages/order/detail/index?id=${orderId}` })
+      }, 1000)
+    } catch {
+      Taro.showToast({ title: '下单失败', icon: 'none' })
+      this.setState({ submitting: false })
     }
   }
-
-  /* ---------- render ---------- */
 
   render() {
-    const {
-      loading,
-      address,
-      items,
-      coupons,
-      selectedCoupon,
-      showCouponPicker,
-      pointsBalance,
-      usePoints,
-      failedImages,
-    } = this.state
-
-    if (loading) {
-      return (
-        <View className="order-container">
-          <View className="order-loading">
-            <Text className="order-loading-text">加载中...</Text>
-          </View>
-        </View>
-      )
-    }
-
-    const goodsTotal = this.getGoodsTotal()
-    const shippingFee = this.getShippingFee()
-    const bestDiscount = this.getBestDiscount()
-    const pointsOffset = this.getPointsOffset()
-    const finalPrice = this.getFinalPrice()
+    const { selectedAddress, addresses, coupons, selectedCoupon, pointsBalance, usePoints, items, remark, showAddressPicker, showCouponPicker, submitting } = this.state
 
     return (
-      <View className="order-container">
-        <ScrollView scrollY className="order-content">
-          {/* Address Section */}
-          <View className="order-section" onClick={this.selectAddress}>
-            <View className="address-card">
-              {address ? (
-                <View className="address-info">
-                  <View className="address-header">
-                    <Text className="address-name">{address.recipientName}</Text>
-                    <Text className="address-phone">{address.recipientPhone}</Text>
-                  </View>
-                  <Text className="address-detail-text">
-                    {address.province || ''}
-                    {address.city || ''}
-                    {address.district || ''}
-                    {address.detailAddress}
-                  </Text>
+      <View className='confirm-page'>
+        <ScrollView className='confirm-scroll' scrollY>
+          {/* 收货地址 */}
+          <View className='section-card address-card' onClick={() => this.setState({ showAddressPicker: true })}>
+            {selectedAddress ? (
+              <View className='address-content'>
+                <View className='address-main'>
+                  <Text className='receiver-name'>{selectedAddress.receiver}</Text>
+                  <Text className='receiver-phone'>{selectedAddress.phone}</Text>
+                  {selectedAddress.isDefault && <View className='default-tag'>默认</View>}
                 </View>
-              ) : (
-                <Text className="address-placeholder">请选择收货地址</Text>
-              )}
-              <Text className="address-arrow">></Text>
-            </View>
-          </View>
-
-          {/* Items Section */}
-          <View className="order-section">
-            <View className="order-section-title">商品清单</View>
-            {items.map((item) => {
-              const unitPrice = this.getUnitPrice(item)
-              return (
-                <View key={item.id} className="order-item">
-                  {failedImages.has(item.id) || !item.mainImage ? (
-                    <View className="order-item-img-fallback">
-                      <Text className="fallback-letter">{(item.productName || '?')[0]}</Text>
-                    </View>
-                  ) : (
-                    <Image
-                      src={item.mainImage}
-                      mode="aspectFill"
-                      className="order-item-img"
-                      onError={() => this.handleImageError(item.id)}
-                    />
-                  )}
-                  <View className="order-item-info">
-                    <Text className="order-item-name">{item.productName}</Text>
-                    {item.skuSpecs ? (
-                      <Text className="order-item-specs">{item.skuSpecs}</Text>
-                    ) : null}
-                    <View className="order-item-bottom">
-                      <Text className="order-item-price">&yen;{unitPrice.toFixed(2)}</Text>
-                      <Text className="order-item-qty">x{item.quantity}</Text>
-                    </View>
-                  </View>
-                </View>
-              )
-            })}
-          </View>
-
-          {/* Coupon Section */}
-          <View className="order-section" onClick={this.openCouponPicker}>
-            <View className="coupon-row">
-              <Text className="coupon-label">优惠券</Text>
-              <View style={{ display: 'flex', alignItems: 'center' }}>
-                {selectedCoupon ? (
-                  <Text className="coupon-value">
-                    -&yen;{selectedCoupon.discountAmount.toFixed(2)}
-                  </Text>
-                ) : (
-                  <Text className="coupon-value none">
-                    {coupons.length > 0 ? `${coupons.length}张可用` : '暂无可用'}
-                  </Text>
-                )}
-                <Text className="coupon-arrow">></Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Points Section */}
-          <View className="order-section">
-            <View className="points-row">
-              <View style={{ display: 'flex', alignItems: 'center' }}>
-                <Text className="points-info">
-                  积分抵扣 (可用 {pointsBalance} 积分)
+                <Text className='address-detail'>
+                  {selectedAddress.province}{selectedAddress.city}{selectedAddress.district}{selectedAddress.detail}
                 </Text>
-                {pointsBalance > 0 && (
-                  <Text className="points-offset">
-                    可抵 &yen;{Math.floor(pointsBalance / 100).toFixed(2)}
-                  </Text>
-                )}
               </View>
-              <View
-                className={`check-circle ${usePoints ? 'checked' : ''}`}
-                style={{ width: 22, height: 22 }}
-                onClick={this.togglePoints}
-              >
-                {usePoints && (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M5 12L10 17L19 7"
-                      stroke="#fff"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
+            ) : (
+              <View className='add-address'>
+                <Text className='add-addr-text'>请添加收货地址</Text>
               </View>
+            )}
+            <Text className='addr-arrow'>&gt;</Text>
+          </View>
+
+          {/* 商品清单 */}
+          <View className='section-card'>
+            <Text className='section-title'>商品清单</Text>
+            {items.map((item, i) => (
+              <View className='order-item' key={i}>
+                <Image className='order-item-img' src={item.mainImage || ''} mode='aspectFill' />
+                <View className='order-item-info'>
+                  <Text className='order-item-name'>{item.productName || `商品${item.productId}`}</Text>
+                  <Text className='order-item-price'>¥{Number(item.salePrice || item.price || 0).toFixed(2)} × {item.quantity}</Text>
+                </View>
+                <Text className='order-item-total'>
+                  ¥{((item.salePrice || item.price || 0) * item.quantity).toFixed(2)}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* 优惠券 */}
+          <View className='section-card row-item' onClick={() => this.setState({ showCouponPicker: true })}>
+            <Text className='row-label'>优惠券</Text>
+            <Text className='row-value'>
+              {selectedCoupon ? `-¥${selectedCoupon.discountValue.toFixed(2)}` : (coupons.length > 0 ? `${coupons.length}张可用` : '暂无可用')}
+            </Text>
+            <Text className='row-arrow'>&gt;</Text>
+          </View>
+
+          {/* 积分 */}
+          <View className='section-card row-item'>
+            <Text className='row-label'>积分抵扣</Text>
+            <Text className='row-desc'>({pointsBalance}积分可抵¥{(pointsBalance / 100).toFixed(2)})</Text>
+            <View
+              className={`toggle-btn ${usePoints ? 'on' : ''}`}
+              onClick={() => this.setState({ usePoints: !usePoints })}
+            >
+              <View className='toggle-circle' />
             </View>
           </View>
 
-          {/* Price Summary */}
-          <View className="order-section">
-            <View className="price-row">
+          {/* 运费 */}
+          <View className='section-card row-item'>
+            <Text className='row-label'>运费</Text>
+            <Text className='row-value freight-val'>
+              {this.freight === 0 ? '免运费' : `¥${this.freight.toFixed(2)}`}
+            </Text>
+          </View>
+
+          {/* 备注 */}
+          <View className='section-card'>
+            <Text className='row-label'>备注</Text>
+            <input
+              className='remark-input'
+              placeholder='选填：对本次交易的说明'
+              value={remark}
+              onInput={(e: any) => this.setState({ remark: e.detail.value })}
+            />
+          </View>
+
+          {/* 价格明细 */}
+          <View className='section-card price-detail'>
+            <Text className='section-title'>价格明细</Text>
+            <View className='price-row-item'>
               <Text>商品合计</Text>
-              <Text className="price-row-value">&yen;{goodsTotal.toFixed(2)}</Text>
+              <Text>¥{this.subtotal.toFixed(2)}</Text>
             </View>
-            <View className="price-row">
+            <View className='price-row-item'>
               <Text>运费</Text>
-              <Text className={`price-row-value ${shippingFee === 0 ? 'green' : ''}`}>
-                {shippingFee === 0 ? '免运费' : <Text>&yen;{shippingFee.toFixed(2)}</Text>}
-              </Text>
+              <Text>{this.freight === 0 ? '免运费' : `¥${this.freight.toFixed(2)}`}</Text>
             </View>
-            {bestDiscount.amount > 0 && (
-              <View className="price-row discount">
-                <Text>
-                  {bestDiscount.type === 'full' ? '满减优惠' : '优惠券抵扣'}
-                </Text>
-                <Text className="price-row-value red">
-                  -&yen;{bestDiscount.amount.toFixed(2)}
-                </Text>
+            {this.couponDiscount > 0 && (
+              <View className='price-row-item discount'>
+                <Text>优惠券</Text>
+                <Text>-¥{this.couponDiscount.toFixed(2)}</Text>
               </View>
             )}
-            {pointsOffset > 0 && (
-              <View className="price-row discount">
+            {this.pointsDiscount > 0 && (
+              <View className='price-row-item discount'>
                 <Text>积分抵扣</Text>
-                <Text className="price-row-value red">
-                  -&yen;{pointsOffset.toFixed(2)}
-                </Text>
+                <Text>-¥{this.pointsDiscount.toFixed(2)}</Text>
               </View>
             )}
-            <View className="price-row total">
-              <Text className="price-row-label">应付金额</Text>
-              <Text className="price-row-value highlight">
-                &yen;{finalPrice.toFixed(2)}
-              </Text>
+            <View className='price-row-item total-row'>
+              <Text>实付金额</Text>
+              <Text className='total-amount'>¥{this.total.toFixed(2)}</Text>
             </View>
           </View>
+
+          <View style={{ height: '80px' }} />
         </ScrollView>
 
-        {/* Fixed Footer */}
-        <View className="order-footer">
-          <View className="order-footer-total">
-            <Text className="order-footer-label">合计:</Text>
-            <Text className="order-footer-symbol">&yen;</Text>
-            <Text className="order-footer-price">{finalPrice.toFixed(2)}</Text>
+        {/* 提交按钮 */}
+        <View className='submit-bar'>
+          <View className='submit-total'>
+            <Text className='submit-label'>实付：</Text>
+            <Text className='submit-price'>¥{this.total.toFixed(2)}</Text>
           </View>
-          <View className="order-submit-btn" onClick={this.submitOrder}>
-            <Text className="order-submit-text">提交订单</Text>
+          <View
+            className={`submit-btn ${submitting ? 'disabled' : ''}`}
+            onClick={this.submitOrder.bind(this)}
+          >
+            <Text>{submitting ? '提交中...' : '提交订单'}</Text>
           </View>
         </View>
 
-        {/* Coupon Picker Overlay */}
+        {/* 地址选择弹窗 */}
+        {showAddressPicker && (
+          <View className='picker-overlay' onClick={() => this.setState({ showAddressPicker: false })}>
+            <View className='picker-panel' onClick={e => e.stopPropagation()}>
+              <View className='picker-header'>
+                <Text className='picker-title'>选择收货地址</Text>
+                <Text className='picker-close' onClick={() => this.setState({ showAddressPicker: false })}>✕</Text>
+              </View>
+              <ScrollView scrollY className='picker-list'>
+                {addresses.map(addr => (
+                  <View
+                    key={addr.id}
+                    className={`addr-option ${selectedAddress?.id === addr.id ? 'selected' : ''}`}
+                    onClick={() => this.setState({ selectedAddress: addr, showAddressPicker: false })}
+                  >
+                    <View className='addr-option-top'>
+                      <Text className='addr-name'>{addr.receiver} {addr.phone}</Text>
+                      {addr.isDefault && <View className='default-tag'>默认</View>}
+                    </View>
+                    <Text className='addr-full'>{addr.province}{addr.city}{addr.district}{addr.detail}</Text>
+                  </View>
+                ))}
+                <View
+                  className='add-addr-btn'
+                  onClick={() => { this.setState({ showAddressPicker: false }); Taro.navigateTo({ url: '/pages/address-form/index' }) }}
+                >
+                  <Text>+ 新增地址</Text>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        )}
+
+        {/* 优惠券选择弹窗 */}
         {showCouponPicker && (
-          <View className="coupon-overlay" onClick={this.closeCouponPicker}>
-            <View
-              className="coupon-picker"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <View className="coupon-picker-header">
-                <Text className="coupon-picker-title">选择优惠券</Text>
-                <Text className="coupon-picker-close" onClick={this.closeCouponPicker}>
-                  关闭
-                </Text>
+          <View className='picker-overlay' onClick={() => this.setState({ showCouponPicker: false })}>
+            <View className='picker-panel' onClick={e => e.stopPropagation()}>
+              <View className='picker-header'>
+                <Text className='picker-title'>选择优惠券</Text>
+                <Text className='picker-close' onClick={() => this.setState({ showCouponPicker: false })}>✕</Text>
               </View>
-              <View className="coupon-picker-list">
-                {coupons.length === 0 ? (
-                  <View className="coupon-picker-empty">暂无可用优惠券</View>
-                ) : (
-                  coupons.map((coupon) => {
-                    const isSelected = selectedCoupon?.id === coupon.id
-                    return (
-                      <View
-                        key={coupon.id}
-                        className="coupon-picker-item"
-                        onClick={() => this.selectCoupon(coupon)}
-                      >
-                        <View className="coupon-picker-item-info">
-                          <Text className="coupon-picker-item-name">
-                            {coupon.couponName}
-                          </Text>
-                          <Text className="coupon-picker-item-desc">
-                            {coupon.description || `满${coupon.minAmount}可用`}
-                          </Text>
-                        </View>
-                        <Text className="coupon-picker-item-amount">
-                          &yen;{coupon.discountAmount}
-                        </Text>
-                        <View
-                          className={`coupon-picker-item-radio ${isSelected ? 'selected' : ''}`}
-                        >
-                          {isSelected && (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                              <path
-                                d="M5 12L10 17L19 7"
-                                stroke="#fff"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          )}
-                        </View>
+              <ScrollView scrollY className='picker-list'>
+                <View
+                  className={`coupon-option ${!selectedCoupon ? 'selected' : ''}`}
+                  onClick={() => this.setState({ selectedCoupon: null, showCouponPicker: false })}
+                >
+                  <Text>不使用优惠券</Text>
+                </View>
+                {coupons.map(c => (
+                  <View
+                    key={c.id}
+                    className={`coupon-option ${selectedCoupon?.id === c.id ? 'selected' : ''}`}
+                    onClick={() => this.setState({ selectedCoupon: c, showCouponPicker: false })}
+                  >
+                    <View className='coupon-card-inner'>
+                      <Text className='coupon-value'>¥{c.discountValue}</Text>
+                      <View className='coupon-info'>
+                        <Text className='coupon-name'>{c.couponName}</Text>
+                        <Text className='coupon-condition'>满{c.minAmount}元可用</Text>
                       </View>
-                    )
-                  })
-                )}
-              </View>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
             </View>
           </View>
         )}

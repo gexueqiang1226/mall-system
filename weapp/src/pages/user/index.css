@@ -1,344 +1,189 @@
-/* ==========================================
-   User/Mine Page — Matched from sams-mall-css.css
-   ========================================== */
+page {
+  background: #F5F5F5;
+}
 
 .user-page {
-  width: 100%;
-  min-height: 100vh;
-  background: var(--color-bg);
-  padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom));
-}
-
-.user-scroll { height: 100vh; }
-
-/* Loading */
-.loading-wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120px 0;
+  height: 100vh;
+  background: #F5F5F5;
 }
 
-/* ========== Profile Banner — matching old .mine-header ========== */
-.profile-banner {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  padding: 24px 16px 40px;
-  color: white;
-  position: relative;
-  overflow: hidden;
+.user-scroll {
+  height: 100vh;
 }
 
-.profile-banner::after {
-  content: '';
-  position: absolute;
-  bottom: -30px;
-  left: -10%;
-  width: 120%;
-  height: 60px;
-  background: var(--color-bg);
-  border-radius: 50% 50% 0 0;
-}
-
-.profile-info {
+/* 用户信息卡片 */
+.user-card {
+  background: linear-gradient(135deg, #0056B3 0%, #003d82 100%);
+  padding: 40px 20px 30px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  position: relative;
-  z-index: 1;
+  gap: 16px;
 }
 
-/* Avatar — matching old .mine-avatar */
-.profile-avatar-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  flex-shrink: 0;
+.user-card.not-login {
+  padding: 40px 20px 28px;
 }
 
-.profile-avatar-initial {
-  font-size: var(--font-xxl);
-  font-weight: bold;
-  color: white;
-}
-
-.profile-meta { flex: 1; }
-
-.profile-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: white;
-  display: block;
-  margin-bottom: 4px;
-}
-
-/* VIP Badge — matching old .member-btn */
-.vip-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 12px;
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  border-radius: 12px;
-}
-
-.vip-text {
-  font-size: var(--font-xs);
-  color: #5D4037;
-  font-weight: bold;
-}
-
-/* ========== Not Logged In Banner ========== */
-.profile-banner-empty {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  padding: 60px 24px;
-  min-height: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.profile-banner-empty::after {
-  content: '';
-  position: absolute;
-  bottom: -30px;
-  left: -10%;
-  width: 120%;
-  height: 60px;
-  background: var(--color-bg);
-  border-radius: 50% 50% 0 0;
-}
-
-.profile-empty-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.profile-empty-avatar {
+.user-avatar {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255,255,255,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.5);
 }
 
-.profile-empty-avatar-text {
-  font-size: 32px;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: bold;
+.user-avatar.guest {
+  background: rgba(255,255,255,0.15);
 }
 
-.profile-empty-title {
-  font-size: var(--font-md);
-  color: rgba(255, 255, 255, 0.9);
-  margin-top: var(--spacing-lg);
+.avatar-text {
+  font-size: 28px;
+  color: #fff;
+  font-weight: 700;
 }
 
-.profile-empty-btns {
-  display: flex;
-  gap: var(--spacing-lg);
-  margin-top: var(--spacing-xl);
-}
-
-.profile-login-btn {
-  padding: 10px 40px;
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.profile-login-text {
-  font-size: var(--font-base);
-  color: var(--color-primary);
-  font-weight: bold;
-}
-
-.profile-register-btn {
-  padding: 10px 40px;
-  background: transparent;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-}
-
-.profile-register-text {
-  font-size: var(--font-base);
-  color: white;
-  font-weight: bold;
-}
-
-/* ========== Stats Card — matching old .mine-stats ========== */
-.stats-card {
-  margin: -28px 12px 0;
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 20px 0;
-  position: relative;
-  z-index: 2;
-}
-
-.stats-row { display: flex; align-items: center; }
-
-.stat-item {
+.user-info {
   flex: 1;
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.user-meta {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--spacing-xs);
-  cursor: pointer;
+  gap: 10px;
 }
 
-.stat-value {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--color-text-primary);
-}
-
-.stat-label {
+.vip-badge {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
   font-size: 12px;
-  color: var(--color-text-hint);
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.4);
 }
 
-.stat-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--color-divider);
+.user-points {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
 }
 
-/* ========== Section Card — matching old .mine-content ========== */
+.login-tip {
+  font-size: 15px;
+  color: rgba(255,255,255,0.85);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.login-btn {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 24px;
+  border-radius: 20px;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* 通用卡片 */
 .section-card {
-  margin: var(--spacing-md);
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
+  background: #fff;
+  padding: 14px 16px;
+  margin-top: 8px;
 }
 
-/* ========== Order Shortcuts — matching old .mine-orders ========== */
-.section-header-row {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 16px 8px;
+  margin-bottom: 14px;
 }
 
 .section-title {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: var(--color-text-primary);
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
 }
 
-.view-all { display: flex; align-items: center; gap: 2px; }
-.view-all-text { font-size: var(--font-sm); color: var(--color-text-hint); }
-.view-all-arrow { font-size: var(--font-sm); color: var(--color-text-hint); }
+.more-link {
+  font-size: 13px;
+  color: #0056B3;
+}
 
-.order-shortcuts {
+/* 订单Tab */
+.order-section { }
+
+.order-tabs {
   display: flex;
-  padding: var(--spacing-sm) 16px 20px;
 }
 
-.order-shortcut-item {
+.order-tab-item {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-sm);
-  cursor: pointer;
-  position: relative;
+  gap: 6px;
+  padding: 8px 0;
 }
 
-.order-icon-wrap {
-  position: relative;
-  width: 40px;
-  height: 40px;
+.order-tab-icon {
+  font-size: 26px;
+}
+
+.order-tab-label {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 功能网格 */
+.func-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.func-item {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 6px;
+}
+
+.func-icon {
+  font-size: 26px;
+}
+
+.func-label {
+  font-size: 12px;
+  color: #333;
+  text-align: center;
+}
+
+/* 退出登录 */
+.logout-btn {
+  margin: 12px 16px;
+  background: #fff;
+  border-radius: 24px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.order-icon-text { font-size: 22px; }
-
-.order-badge {
-  position: absolute;
-  top: -2px;
-  right: 50%;
-  transform: translateX(18px);
-  background: var(--color-accent);
-  color: white;
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 10px;
-  min-width: 16px;
-  text-align: center;
-}
-
-.order-badge-text { font-size: 9px; color: white; font-weight: bold; }
-.order-label { font-size: 12px; color: var(--color-text-secondary); }
-
-/* ========== Menu Section — matching old .mine-menu ========== */
-.menu-section { padding: 0 var(--spacing-lg); }
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 0;
-  cursor: pointer;
-  border-bottom: 1px solid var(--color-divider);
-}
-
-.menu-item:last-child { border-bottom: none; }
-.menu-item:hover { background: #f9f9f9; }
-
-.menu-icon-wrap {
-  font-size: 20px;
-  width: 24px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.menu-icon-text { font-size: 20px; }
-
-.menu-text {
-  flex: 1;
   font-size: 15px;
-  color: var(--color-text-primary);
+  color: #FF2D2D;
+  font-weight: 600;
+  border: 1px solid #FFD6D6;
 }
-
-.menu-arrow { color: var(--color-text-hint); font-size: 16px; }
-
-/* Menu Badge */
-.menu-badge {
-  background: var(--color-accent);
-  color: white;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 10px;
-}
-
-/* Logout */
-.logout-wrap { padding: var(--spacing-lg) var(--spacing-xxl) var(--spacing-xxl); }
-
-.logout-btn {
-  width: 100%;
-  padding: 14px 0;
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  text-align: center;
-  box-shadow: var(--shadow-card);
-}
-
-.logout-text { font-size: var(--font-base); color: var(--color-text-hint); }

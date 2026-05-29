@@ -1,14 +1,8 @@
 import { Component } from 'react'
-import { View, ScrollView, Text, Image, Swiper, SwiperItem } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
-
-interface Banner {
-  id: number
-  imageUrl: string
-  title: string
-}
+import './index.css'
 
 interface Product {
   id: number
@@ -16,62 +10,53 @@ interface Product {
   mainImage: string
   salePrice: number
   marketPrice: number
-  costPrice: number
-  sellableStock: number
-  isOnline: number
-  isRecommend: number
   soldCount: number
   categoryId: number
 }
 
-interface CategoryItem {
+interface Category {
   id: number
-  categoryName: string
+  name: string
   parentId: number
+  level: number
 }
 
-interface HomePageState {
-  banners: Banner[]
-  categories: CategoryItem[]
-  allProducts: Product[]
-  flashProducts: Product[]
-  hotProducts: Product[]
-  newProducts: Product[]
+interface State {
+  banners: string[]
+  categories: Category[]
+  seckillProducts: Product[]
   recommendProducts: Product[]
+  newProducts: Product[]
+  guessProducts: Product[]
+  page: number
+  hasMore: boolean
   loading: boolean
-  countdown: { hours: number; minutes: number; seconds: number }
-  failedImages: Set<number>
+  refreshing: boolean
+  countdown: { h: string; m: string; s: string }
 }
 
-const CAT_EMOJIS: Record<string, string> = {
-  '水果': '🍎', '蔬菜': '🥬', '肉类': '🍗', '粮油': '🌾', '牛奶': '🥛',
-  '零食': '🍬', '饮料': '🥤', '海鲜': '🦐', '母婴': '👶', '个护': '🧴',
-  '家居': '🏠', '禽蛋': '🥚', '电子产品': '📱', '服装鞋帽': '👔',
-  '美妆护肤': '💄', '食品饮料': '🍔', '家居生活': '🏡', '母婴用品': '🍼',
-  '运动户外': '⚽', '更多分类': '📦',
-}
+const CATEGORY_EMOJIS = ['📱', '👔', '💄', '🍔', '🏡', '📚', '🎮', '🎁']
+const CATEGORY_NAMES = ['手机数码', '服装服饰', '美妆护肤', '食品生鲜', '家居家装', '图书文娱', '游戏周边', '礼品特产']
 
-export default class Index extends Component<{}, HomePageState> {
-  private countdownTimer: ReturnType<typeof setInterval> | null = null
+export default class Index extends Component<{}, State> {
+  countdownTimer: any = null
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      banners: [
-        { id: 1, imageUrl: '', title: '新人专享 首单立减50' },
-        { id: 2, imageUrl: '', title: '限时特卖 全场5折起' },
-        { id: 3, imageUrl: '', title: '会员日 双倍积分' },
-      ],
-      categories: [],
-      allProducts: [],
-      flashProducts: [],
-      hotProducts: [],
-      newProducts: [],
-      recommendProducts: [],
-      loading: true,
-      countdown: { hours: 0, minutes: 0, seconds: 0 },
-      failedImages: new Set(),
-    }
+  state: State = {
+    banners: [
+      'https://picsum.photos/800/300?random=10',
+      'https://picsum.photos/800/300?random=11',
+      'https://picsum.photos/800/300?random=12',
+    ],
+    categories: [],
+    seckillProducts: [],
+    recommendProducts: [],
+    newProducts: [],
+    guessProducts: [],
+    page: 1,
+    hasMore: true,
+    loading: false,
+    refreshing: false,
+    countdown: { h: '02', m: '30', s: '00' },
   }
 
   componentDidMount() {
@@ -83,328 +68,228 @@ export default class Index extends Component<{}, HomePageState> {
     if (this.countdownTimer) clearInterval(this.countdownTimer)
   }
 
-  startCountdown = () => {
-    const calcEndOfDay = () => {
-      const now = new Date()
-      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
-      return Math.max(0, Math.floor((end.getTime() - now.getTime()) / 1000))
-    }
-    const update = () => {
-      const diff = calcEndOfDay()
-      this.setState({
-        countdown: {
-          hours: Math.floor(diff / 3600),
-          minutes: Math.floor((diff % 3600) / 60),
-          seconds: diff % 60,
-        },
-      })
-    }
-    update()
-    this.countdownTimer = setInterval(update, 1000)
+  startCountdown() {
+    let total = 2 * 3600 + 30 * 60
+    this.countdownTimer = setInterval(() => {
+      total = total > 0 ? total - 1 : 7200
+      const h = String(Math.floor(total / 3600)).padStart(2, '0')
+      const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0')
+      const s = String(total % 60).padStart(2, '0')
+      this.setState({ countdown: { h, m, s } })
+    }, 1000)
   }
 
-  loadData = async () => {
+  async loadData() {
+    this.setState({ loading: true })
     try {
-      const [prodRes, catRes] = await Promise.all([
-        api.get('/products', { size: 100, isOnline: 1 }),
+      const [catRes, prodRes] = await Promise.all([
         api.get('/categories'),
+        api.get('/products', { page: 1, size: 20, sortBy: 'soldCount', order: 'desc' }),
       ])
-      const allProducts: Product[] = (prodRes.data?.items || []).map((p: Product) => ({
-        ...p, mainImage: p.mainImage || '',
-      }))
-      const categories: CategoryItem[] = catRes.data || []
-
-      const flashProducts = allProducts.slice(0, 4)
-
-      let hotProducts = allProducts.filter((p) => p.isRecommend === 1)
-      if (hotProducts.length < 4) {
-        hotProducts = [...allProducts].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)).slice(0, 6)
-      } else {
-        hotProducts = hotProducts.slice(0, 6)
-      }
-
-      const newProducts = [...allProducts].sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 6)
-
-      const browseHistory: number[] = JSON.parse(Taro.getStorageSync('SAM_BROWSE') || '[]')
-      let recommendProducts: Product[] = []
-      if (browseHistory.length > 0) {
-        const catFreq: Record<number, number> = {}
-        browseHistory.forEach((pid) => {
-          const p = allProducts.find((x) => x.id === pid)
-          if (p && p.categoryId) catFreq[p.categoryId] = (catFreq[p.categoryId] || 0) + 1
-        })
-        const topCats = Object.keys(catFreq).sort((a, b) => catFreq[+b] - catFreq[+a]).slice(0, 3)
-        recommendProducts = allProducts.filter((p) => topCats.includes(String(p.categoryId))).slice(0, 6)
-      }
-      if (recommendProducts.length < 4) {
-        recommendProducts = [...allProducts].sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)).slice(0, 6)
-      }
-
+      const categories: Category[] = ((catRes?.data || []) as Category[])
+        .filter(c => c.level === 1)
+        .slice(0, 8)
+      const products: Product[] = prodRes?.data?.items || []
       this.setState({
-        allProducts, categories, flashProducts, hotProducts, newProducts, recommendProducts, loading: false,
+        categories,
+        seckillProducts: products.slice(0, 6),
+        recommendProducts: products.slice(0, 8),
+        newProducts: products.slice(4, 10),
+        guessProducts: products.slice(0, 10),
+        page: 1,
+        hasMore: products.length >= 10,
+        loading: false,
+        refreshing: false,
       })
-    } catch (error) {
-      console.error('加载数据失败:', error)
+    } catch {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+      this.setState({ loading: false, refreshing: false })
+    }
+  }
+
+  async loadMore() {
+    if (!this.state.hasMore || this.state.loading) return
+    const nextPage = this.state.page + 1
+    this.setState({ loading: true })
+    try {
+      const res = await api.get('/products', { page: nextPage, size: 10 })
+      const newItems: Product[] = res?.data?.items || []
+      this.setState(prev => ({
+        guessProducts: [...prev.guessProducts, ...newItems],
+        page: nextPage,
+        hasMore: newItems.length >= 10,
+        loading: false,
+      }))
+    } catch {
       this.setState({ loading: false })
     }
   }
 
-  goToProductDetail = (productId: number) => {
-    Taro.navigateTo({ url: `/pages/product/detail/index?id=${productId}` })
+  onRefresh() {
+    this.setState({ refreshing: true }, () => this.loadData())
   }
 
-  goToSearch = () => {
+  goProduct(id: number) {
+    Taro.navigateTo({ url: `/pages/product/detail/index?id=${id}` })
+  }
+
+  goSearch() {
     Taro.navigateTo({ url: '/pages/search/index' })
   }
 
-  goToCategory = (categoryId: number) => {
-    Taro.switchTab({ url: '/pages/product/list/index' })
-  }
-
-  addToCart = async (product: Product, e: any) => {
-    e.stopPropagation()
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo || !userInfo.userId) {
-      Taro.showToast({ title: '请先登录', icon: 'error' })
-      setTimeout(() => Taro.navigateTo({ url: '/pages/login/index' }), 1000)
-      return
-    }
-    try {
-      await api.post('/cart', { userId: userInfo.userId, productId: product.id, quantity: 1 })
-      Taro.showToast({ title: '已加入购物车', icon: 'success' })
-    } catch (error) {
-      Taro.showToast({ title: '操作失败', icon: 'error' })
-    }
-  }
-
-  handleImageError = (productId: number) => {
-    this.setState((prev) => {
-      const failedImages = new Set(prev.failedImages)
-      failedImages.add(productId)
-      return { failedImages }
-    })
-  }
-
-  padZero = (n: number) => (n < 10 ? `0${n}` : `${n}`)
-
-  renderProductImage = (product: Product, className: string) => {
-    const { failedImages } = this.state
-    if (failedImages.has(product.id) || !product.mainImage) {
-      return (
-        <View className={className} style={{ background: '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontSize: '28px' }}>📦</Text>
-        </View>
-      )
-    }
-    return <Image src={product.mainImage} mode="aspectFill" className={className} onError={() => this.handleImageError(product.id)} />
+  goCategory(catId?: number) {
+    const url = catId
+      ? `/pages/product/list/index?categoryId=${catId}`
+      : '/pages/product/list/index'
+    Taro.navigateTo({ url })
   }
 
   render() {
-    const { banners, categories, flashProducts, hotProducts, newProducts, recommendProducts, countdown, loading } = this.state
+    const { banners, categories, seckillProducts, recommendProducts, newProducts, guessProducts, countdown, refreshing } = this.state
 
-    if (loading) {
-      return (
-        <View className="home-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-          <View className="loading-spinner" />
-        </View>
-      )
-    }
-
-    const parentCats = categories.filter((c) => !c.parentId || c.parentId === 0).slice(0, 12)
-    const displayCats = parentCats.length > 0 ? parentCats : categories.slice(0, 12)
+    const displayCats = categories.length ? categories : Array(8).fill(null)
 
     return (
-      <View className="home-page">
-        {/* Search Bar */}
-        <View className="search-bar" onClick={this.goToSearch}>
-          <View className="search-input-wrap">
-            <Text className="search-placeholder">搜索商品</Text>
+      <View className='page'>
+        {/* 固定搜索栏 */}
+        <View className='search-bar' onClick={this.goSearch.bind(this)}>
+          <View className='search-input-wrap'>
+            <Text className='search-icon'>🔍</Text>
+            <Text className='search-placeholder'>搜索商品、品牌</Text>
           </View>
+          <Text className='scan-icon'>📷</Text>
         </View>
 
-        <ScrollView scrollY className="home-scroll">
-          {/* Banner Swiper — matching old .banner-section */}
-          <View className="banner-section">
-            <Swiper className="banner-swiper" indicatorDots autoplay interval={3000} circular indicatorColor="rgba(255,255,255,0.5)" indicatorActiveColor="#FFFFFF">
-              {banners.map((banner) => (
-                <SwiperItem key={banner.id}>
-                  <View className="banner-slide" style={{ background: 'linear-gradient(135deg, #0056B3 0%, #0078E7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}>
-                    <View className="banner-text">
-                      <Text style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>{banner.title}</Text>
-                    </View>
-                  </View>
-                </SwiperItem>
+        <ScrollView
+          className='scroll-body'
+          scrollY
+          refresherEnabled
+          refresherTriggered={refreshing}
+          onRefresherRefresh={this.onRefresh.bind(this)}
+          onScrollToLower={this.loadMore.bind(this)}
+        >
+          {/* Banner轮播 */}
+          <Swiper
+            className='banner'
+            autoplay
+            interval={3000}
+            circular
+            indicatorDots
+            indicatorColor='rgba(255,255,255,0.5)'
+            indicatorActiveColor='#fff'
+          >
+            {banners.map((b, i) => (
+              <SwiperItem key={i}>
+                <Image className='banner-img' src={b} mode='aspectFill' />
+              </SwiperItem>
+            ))}
+          </Swiper>
+
+          {/* 金刚区分类 */}
+          <View className='section-card'>
+            <View className='category-grid'>
+              {displayCats.map((cat, i) => (
+                <View
+                  className='category-item'
+                  key={i}
+                  onClick={() => this.goCategory(cat?.id)}
+                >
+                  <View className='category-icon-circle'>{CATEGORY_EMOJIS[i]}</View>
+                  <Text className='category-label'>{cat?.name || CATEGORY_NAMES[i]}</Text>
+                </View>
               ))}
-            </Swiper>
+            </View>
           </View>
 
-          {/* Category Grid */}
-          {displayCats.length > 0 && (
-            <View className="section-card category-section">
-              <View className="category-grid">
-                {displayCats.map((cat) => (
-                  <View key={cat.id} className="category-item" onClick={() => this.goToCategory(cat.id)}>
-                    <View className="category-icon-circle">
-                      <Text style={{ fontSize: '28px' }}>{CAT_EMOJIS[cat.categoryName] || '📦'}</Text>
-                    </View>
-                    <Text className="category-name">{cat.categoryName}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* Flash Sale / Seckill */}
-          {flashProducts.length > 0 && (
-            <View className="section-card flash-section">
-              <View className="section-header">
-                <View className="section-header-left">
-                  <Text className="flash-title">限时秒杀</Text>
-                  <View className="countdown-wrap">
-                    <Text className="countdown-num">{this.padZero(countdown.hours)}</Text>
-                    <Text className="countdown-sep">:</Text>
-                    <Text className="countdown-num">{this.padZero(countdown.minutes)}</Text>
-                    <Text className="countdown-sep">:</Text>
-                    <Text className="countdown-num">{this.padZero(countdown.seconds)}</Text>
-                  </View>
+          {/* 限时秒杀 */}
+          <View className='section-card seckill-section'>
+            <View className='section-header'>
+              <View className='seckill-title-wrap'>
+                <Text className='seckill-title'>⚡ 限时秒杀</Text>
+                <View className='countdown-wrap'>
+                  <Text className='countdown-block'>{countdown.h}</Text>
+                  <Text className='countdown-sep'>:</Text>
+                  <Text className='countdown-block'>{countdown.m}</Text>
+                  <Text className='countdown-sep'>:</Text>
+                  <Text className='countdown-block'>{countdown.s}</Text>
                 </View>
               </View>
-              <ScrollView scrollX className="flash-scroll">
-                {flashProducts.map((product) => {
-                  const seckillPrice = (product.salePrice * 0.6).toFixed(2)
-                  const soldPercent = Math.min(95, Math.round(Math.random() * 60 + 30))
-                  return (
-                    <View key={product.id} className="seckill-card" onClick={() => this.goToProductDetail(product.id)}>
-                      {this.renderProductImage(product, 'seckill-card-img')}
-                      <View className="seckill-card-body">
-                        <Text className="seckill-card-name" numberOfLines={1}>{product.productName}</Text>
-                        <View className="seckill-card-prices">
-                          <Text className="seckill-card-seckill">¥{seckillPrice}</Text>
-                          <Text className="seckill-card-original">¥{product.salePrice}</Text>
-                        </View>
-                        <View className="seckill-progress-wrap">
-                          <View className="seckill-progress-bar" style={{ width: `${soldPercent}%` }} />
-                        </View>
-                        <Text className="seckill-progress-text">已抢{soldPercent}%</Text>
-                        <View className="seckill-card-btn" onClick={(e) => this.addToCart(product, e)}>
-                          <Text className="seckill-card-btn-text">马上抢</Text>
-                        </View>
-                      </View>
-                    </View>
-                  )
-                })}
-              </ScrollView>
+              <Text className='more-link'>更多 &gt;</Text>
             </View>
-          )}
-
-          {/* Hot / Popular Recommendations */}
-          {hotProducts.length > 0 && (
-            <View className="section-card recommend-section">
-              <View className="section-header">
-                <Text className="section-title">人气推荐</Text>
-              </View>
-              <View className="recommend-grid">
-                {hotProducts.map((product) => {
-                  const soldOut = product.sellableStock !== undefined && product.sellableStock <= 0
-                  return (
-                    <View key={product.id} className="recommend-card" onClick={() => this.goToProductDetail(product.id)}>
-                      <View className="recommend-img-wrap">
-                        {this.renderProductImage(product, 'recommend-img')}
-                        {soldOut && <View className="sold-out-badge"><Text className="sold-out-text">已售罄</Text></View>}
-                      </View>
-                      <View className="recommend-info">
-                        <Text className="recommend-name" numberOfLines={2}>{product.productName}</Text>
-                        <View className="recommend-bottom">
-                          <View className="recommend-price-wrap">
-                            <Text className="recommend-price">¥</Text>
-                            <Text className="recommend-price-val">{product.salePrice}</Text>
-                          </View>
-                          {!soldOut && (
-                            <View className="add-cart-btn" onClick={(e) => this.addToCart(product, e)}>
-                              <Text style={{ color: '#fff', fontSize: '16px' }}>+</Text>
-                            </View>
-                          )}
-                        </View>
-                      </View>
+            <ScrollView scrollX className='seckill-scroll'>
+              {seckillProducts.map(p => {
+                const pct = Math.min(85, 30 + (p.soldCount || 0) % 55)
+                return (
+                  <View className='seckill-card' key={p.id} onClick={() => this.goProduct(p.id)}>
+                    <Image className='seckill-img' src={p.mainImage} mode='aspectFill' />
+                    <Text className='seckill-price'>¥{Number(p.salePrice).toFixed(0)}</Text>
+                    <View className='seckill-progress-bg'>
+                      <View className='seckill-progress-fill' style={{ width: `${pct}%` }} />
                     </View>
-                  )
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* New Arrivals */}
-          {newProducts.length > 0 && (
-            <View className="section-card">
-              <View className="section-header">
-                <Text className="section-title">新品首发</Text>
-              </View>
-              <ScrollView scrollX className="flash-scroll">
-                {newProducts.map((product) => (
-                  <View key={product.id} className="new-arrival-card" onClick={() => this.goToProductDetail(product.id)}>
-                    {this.renderProductImage(product, 'new-arrival-img')}
-                    <Text className="new-arrival-name" numberOfLines={1}>{product.productName}</Text>
-                    <Text className="new-arrival-price">¥{product.salePrice}</Text>
+                    <Text className='seckill-pct'>已抢{pct}%</Text>
                   </View>
-                ))}
-              </ScrollView>
-            </View>
-          )}
+                )
+              })}
+            </ScrollView>
+          </View>
 
-          {/* VIP Card — matching old .member-card structure */}
-          <View className="vip-card" onClick={() => Taro.switchTab({ url: '/pages/user/index' })}>
-            <View className="vip-card-content">
-              <View className="vip-icon">⭐</View>
-              <View className="vip-info">
-                <Text className="vip-title">卓越会员</Text>
-                <Text className="vip-desc">享2%积分返利 · 专属优惠</Text>
-              </View>
-              <View className="vip-btn">
-                <Text className="vip-btn-text">查看权益</Text>
-              </View>
+          {/* 人气推荐 */}
+          <View className='section-card'>
+            <View className='section-header'>
+              <Text className='section-title'>🔥 人气推荐</Text>
+              <Text className='more-link' onClick={() => this.goCategory()}>更多 &gt;</Text>
+            </View>
+            <ScrollView scrollX className='horizontal-scroll'>
+              {recommendProducts.map(p => (
+                <View className='h-product-card' key={p.id} onClick={() => this.goProduct(p.id)}>
+                  <Image className='h-product-img' src={p.mainImage} mode='aspectFill' />
+                  <Text className='h-product-name'>{p.productName}</Text>
+                  <Text className='h-product-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* 新品首发 */}
+          <View className='section-card'>
+            <View className='section-header'>
+              <Text className='section-title'>✨ 新品首发</Text>
+              <Text className='more-link'>更多 &gt;</Text>
+            </View>
+            <ScrollView scrollX className='horizontal-scroll'>
+              {newProducts.map(p => (
+                <View className='h-product-card' key={p.id} onClick={() => this.goProduct(p.id)}>
+                  <View style={{ position: 'relative' }}>
+                    <Image className='h-product-img' src={p.mainImage} mode='aspectFill' />
+                    <View className='new-badge'>NEW</View>
+                  </View>
+                  <Text className='h-product-name'>{p.productName}</Text>
+                  <Text className='h-product-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* 猜你喜欢 */}
+          <View className='section-card guess-section'>
+            <View className='section-header'>
+              <Text className='section-title'>💡 猜你喜欢</Text>
+            </View>
+            <View className='guess-grid'>
+              {guessProducts.map(p => (
+                <View className='guess-card' key={p.id} onClick={() => this.goProduct(p.id)}>
+                  <Image className='guess-img' src={p.mainImage} mode='aspectFill' />
+                  <View className='guess-info'>
+                    <Text className='guess-name'>{p.productName}</Text>
+                    <Text className='guess-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
+                    <Text className='guess-sold'>已售{p.soldCount || 0}件</Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
 
-          {/* Personalized Recommendations */}
-          {recommendProducts.length > 0 && (
-            <View className="section-card recommend-section">
-              <View className="section-header">
-                <Text className="section-title">为你推荐</Text>
-              </View>
-              <View className="recommend-grid">
-                {recommendProducts.map((product) => {
-                  const soldOut = product.sellableStock !== undefined && product.sellableStock <= 0
-                  return (
-                    <View key={product.id} className="recommend-card" onClick={() => this.goToProductDetail(product.id)}>
-                      <View className="recommend-img-wrap">
-                        {this.renderProductImage(product, 'recommend-img')}
-                        {soldOut && <View className="sold-out-badge"><Text className="sold-out-text">已售罄</Text></View>}
-                      </View>
-                      <View className="recommend-info">
-                        <Text className="recommend-name" numberOfLines={2}>{product.productName}</Text>
-                        <View className="recommend-bottom">
-                          <View className="recommend-price-wrap">
-                            <Text className="recommend-price">¥</Text>
-                            <Text className="recommend-price-val">{product.salePrice}</Text>
-                          </View>
-                          {!soldOut && (
-                            <View className="add-cart-btn" onClick={(e) => this.addToCart(product, e)}>
-                              <Text style={{ color: '#fff', fontSize: '16px' }}>+</Text>
-                            </View>
-                          )}
-                        </View>
-                      </View>
-                    </View>
-                  )
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* Footer */}
-          <View className="home-footer">
-            <Text className="footer-text">— 已经到底了 —</Text>
-          </View>
+          <View className='page-bottom'><Text>— 已经到底了 —</Text></View>
         </ScrollView>
       </View>
     )

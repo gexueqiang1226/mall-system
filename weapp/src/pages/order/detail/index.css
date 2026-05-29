@@ -1,558 +1,272 @@
-/* ==========================================
-   Order Detail Page — Full Featured Styles
-   ========================================== */
+page {
+  background: #F5F5F5;
+}
 
-.detail-page {
-  width: 100%;
-  min-height: 100vh;
-  background: var(--color-bg);
+.order-detail-page {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  background: #F5F5F5;
 }
 
-/* Navigation Bar */
-.nav-bar {
+.loading-page {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 44px;
-  padding: 0 var(--spacing-md);
-  background: var(--color-white);
-  border-bottom: 1px solid var(--color-border);
-  position: relative;
-  z-index: 10;
-  flex-shrink: 0;
-}
-
-.nav-back {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 60px;
-}
-
-.nav-back-icon {
-  font-size: var(--font-lg);
-  color: var(--color-text-primary);
-}
-
-.nav-back-label {
-  font-size: var(--font-base);
-  color: var(--color-text-primary);
-}
-
-.nav-title {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: var(--color-text-primary);
-}
-
-.nav-placeholder {
-  min-width: 60px;
-}
-
-/* Loading */
-.loading-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 100px 0;
+  height: 100vh;
+  font-size: 14px;
+  color: #999;
 }
 
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 100px 0;
-}
-
-.empty-text {
-  font-size: var(--font-md);
-  color: var(--color-text-hint);
-  margin-bottom: var(--spacing-xxl);
-}
-
-.empty-btn {
-  margin-top: var(--spacing-md);
-}
-
-/* Detail Scroll */
 .detail-scroll {
-  flex: 1;
-  height: 0;
+  height: 100vh;
 }
 
-.bottom-spacer {
-  height: 80px;
-}
-
-/* ==========================================
-   Status Header — Color Variants
-   ========================================== */
-.status-header {
-  padding: var(--spacing-xxl) var(--spacing-lg);
+/* 状态卡片 */
+.status-card {
+  background: linear-gradient(135deg, #0056B3 0%, #003d82 100%);
+  padding: 28px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs);
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.status-header.status-red {
-  background: linear-gradient(135deg, #E53935 0%, #FF5252 100%);
-}
-
-.status-header.status-green {
-  background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
-}
-
-.status-header.status-blue {
-  background: linear-gradient(135deg, #1565C0 0%, #1E88E5 100%);
-}
-
-.status-header.status-gray {
-  background: linear-gradient(135deg, #616161 0%, #9E9E9E 100%);
-}
-
-.status-header.status-orange {
-  background: linear-gradient(135deg, #E65100 0%, #FF6B35 100%);
+.status-icon {
+  font-size: 40px;
 }
 
 .status-label {
-  font-size: var(--font-xxl);
-  font-weight: bold;
-  color: var(--color-white);
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
 }
 
-.status-order-no {
-  font-size: var(--font-sm);
-  color: rgba(255, 255, 255, 0.85);
+.status-hint {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
 }
 
-/* ==========================================
-   Receiver Info Section
-   ========================================== */
-.receiver-section {
-  margin: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-lg);
-}
-
-.receiver-row {
+.status-actions {
   display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-}
-
-.receiver-icon {
-  font-size: 18px;
-  line-height: 24px;
-  flex-shrink: 0;
-}
-
-.receiver-info {
-  flex: 1;
-}
-
-.receiver-name-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xs);
-}
-
-.receiver-name {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: var(--color-text-primary);
-}
-
-.receiver-phone {
-  font-size: var(--font-base);
-  color: var(--color-text-secondary);
-}
-
-.receiver-address {
-  font-size: var(--font-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
-/* ==========================================
-   Items Section
-   ========================================== */
-.items-section {
-  margin: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-lg);
-}
-
-.section-title {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-md);
-}
-
-.item-card {
-  display: flex;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) 0;
-  border-bottom: 1px solid var(--color-divider);
-}
-
-.item-card:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.item-card:first-of-type {
-  padding-top: 0;
-}
-
-.item-image-wrap {
-  width: 80px;
-  height: 80px;
-  flex-shrink: 0;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--color-bg);
-}
-
-.item-image {
-  width: 80px;
-  height: 80px;
-}
-
-.item-image-placeholder {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg);
-}
-
-.item-image-text {
-  font-size: var(--font-xl);
-  color: var(--color-text-hint);
-}
-
-.item-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 80px;
-}
-
-.item-name {
-  font-size: var(--font-base);
-  color: var(--color-text-primary);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-}
-
-.item-spec {
-  font-size: var(--font-xs);
-  color: var(--color-text-hint);
-  background: var(--color-bg);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  align-self: flex-start;
-  margin-top: var(--spacing-xs);
-}
-
-.item-price-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: var(--spacing-xs);
-}
-
-.item-price {
-  font-size: var(--font-md);
-  color: var(--color-danger);
-  font-weight: bold;
-}
-
-.item-qty {
-  font-size: var(--font-sm);
-  color: var(--color-text-hint);
-}
-
-/* ==========================================
-   Price Summary Section
-   ========================================== */
-.price-section {
-  margin: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-lg);
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-sm) 0;
-}
-
-.price-label {
-  font-size: var(--font-base);
-  color: var(--color-text-secondary);
-}
-
-.price-value {
-  font-size: var(--font-base);
-  color: var(--color-text-primary);
-}
-
-.price-value.discount {
-  color: var(--color-success);
-}
-
-.total-row {
-  border-top: 1px solid var(--color-divider);
-  margin-top: var(--spacing-sm);
-  padding-top: var(--spacing-md);
-}
-
-.price-label-total {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: var(--color-text-primary);
-}
-
-.price-value-total {
-  font-size: var(--font-xl);
-  font-weight: bold;
-  color: var(--color-danger);
-}
-
-/* ==========================================
-   Order Info Section
-   ========================================== */
-.order-info-section {
-  margin: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-lg);
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: var(--spacing-sm) 0;
-}
-
-.info-label {
-  font-size: var(--font-sm);
-  color: var(--color-text-hint);
-  flex-shrink: 0;
-  margin-right: var(--spacing-lg);
-}
-
-.info-value {
-  font-size: var(--font-sm);
-  color: var(--color-text-secondary);
-  text-align: right;
-  word-break: break-all;
-}
-
-/* ==========================================
-   Status Timeline
-   ========================================== */
-.timeline-section {
-  margin: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--spacing-lg);
-}
-
-.timeline-list {
-  padding-left: var(--spacing-xs);
-}
-
-.timeline-item {
-  display: flex;
-  min-height: 48px;
-}
-
-.timeline-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 20px;
-  flex-shrink: 0;
-  margin-right: var(--spacing-md);
-}
-
-.timeline-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-round);
-  flex-shrink: 0;
-}
-
-.dot-done {
-  background: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
-}
-
-.dot-pending {
-  background: var(--color-border);
-}
-
-.timeline-line {
-  width: 2px;
-  flex: 1;
-  min-height: 20px;
-}
-
-.line-done {
-  background: var(--color-primary);
-}
-
-.line-pending {
-  background: var(--color-border);
-}
-
-.timeline-right {
-  flex: 1;
-  padding-bottom: var(--spacing-md);
-}
-
-.timeline-label {
-  font-size: var(--font-base);
-  line-height: 16px;
-}
-
-.label-done {
-  color: var(--color-text-primary);
-  font-weight: bold;
-}
-
-.label-pending {
-  color: var(--color-text-hint);
-}
-
-.timeline-time {
-  font-size: var(--font-xs);
-  color: var(--color-text-hint);
-  margin-top: var(--spacing-xs);
-  display: block;
-}
-
-/* ==========================================
-   Actions Bar
-   ========================================== */
-.actions-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--color-white);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
-  padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
-  z-index: 100;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .action-btn {
-  padding: 10px 20px;
+  padding: 8px 24px;
   border-radius: 20px;
-  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.5);
 }
 
-.action-btn-text {
-  font-size: var(--font-sm);
-  font-weight: bold;
+.action-btn.primary {
+  background: #FF6B35;
+  border-color: #FF6B35;
 }
 
-/* Cancel Order */
-.btn-cancel-outline {
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
+/* 通用卡片 */
+.section-card {
+  background: #fff;
+  padding: 14px 16px;
+  margin-bottom: 8px;
 }
 
-.cancel-text {
-  color: var(--color-text-secondary);
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+  display: block;
 }
 
-/* Pay */
-.btn-pay-solid {
-  background: var(--color-danger);
-  border: 1px solid var(--color-danger);
+/* 物流时间线 */
+.logistics-timeline {
+  padding-left: 12px;
 }
 
-.pay-text {
-  color: var(--color-white);
+.logistics-item {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 16px;
+  position: relative;
 }
 
-/* Confirm Receive */
-.btn-confirm-solid {
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
+.logistics-item::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  bottom: 0;
+  width: 1px;
+  background: #e0e0e0;
 }
 
-.confirm-text {
-  color: var(--color-white);
+.logistics-item:last-child::before {
+  display: none;
 }
 
-/* Review */
-.btn-review-outline {
-  background: var(--color-white);
-  border: 1px solid var(--color-primary);
+.logistics-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ddd;
+  border: 2px solid #ddd;
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
-.review-text {
-  color: var(--color-primary);
+.logistics-item.active .logistics-dot {
+  background: #0056B3;
+  border-color: #0056B3;
 }
 
-/* Refund */
-.btn-refund-outline {
-  background: var(--color-white);
-  border: 1px solid var(--color-accent);
+.logistics-content { flex: 1; }
+
+.logistics-event {
+  font-size: 13px;
+  color: #333;
+  display: block;
 }
 
-.refund-text {
-  color: var(--color-accent);
+.logistics-item.active .logistics-event {
+  color: #0056B3;
+  font-weight: 600;
 }
 
-/* Refund Processing */
-.btn-refund-processing {
-  background: var(--color-warning-light);
-  border: 1px solid var(--color-warning);
+.logistics-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+  display: block;
 }
 
-.processing-text {
-  color: var(--color-warning);
+/* 收货地址 */
+.addr-info { }
+
+.addr-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 
-/* Back Button */
-.btn-back-outline {
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
+.addr-receiver {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
 }
 
-.back-text {
-  color: var(--color-text-secondary);
+.addr-phone {
+  font-size: 14px;
+  color: #666;
+}
+
+.addr-full {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 商品清单 */
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.order-item:last-child { border-bottom: none; }
+
+.order-item-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  flex-shrink: 0;
+}
+
+.order-item-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.order-item-name {
+  font-size: 13px;
+  color: #333;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-item-price {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+  display: block;
+}
+
+.order-item-subtotal {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  flex-shrink: 0;
+}
+
+/* 价格明细 */
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.price-row.discount { color: #FF6B35; }
+
+.price-row.total-row {
+  border-top: 1px solid #f0f0f0;
+  margin-top: 6px;
+  padding-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.pay-amount {
+  color: #FF2D2D;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 订单信息 */
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.info-label {
+  font-size: 13px;
+  color: #999;
+  flex-shrink: 0;
+  min-width: 56px;
+}
+
+.info-value {
+  font-size: 13px;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+.order-no {
+  color: #0056B3;
 }

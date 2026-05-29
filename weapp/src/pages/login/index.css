@@ -1,114 +1,136 @@
-/* ==========================================
-   Auth Pages — Matched from sams-mall-css.css
-   ========================================== */
+page {
+  background: #fff;
+}
 
-.login-page {
-  width: 100%;
+.auth-page {
   min-height: 100vh;
-  background: var(--color-bg);
-}
-
-/* Header */
-.login-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  padding-top: calc(var(--spacing-lg) + var(--safe-bottom, 44px));
-}
-
-.back-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.back-text { font-size: 24px; color: var(--color-text-primary); }
-.header-title { font-size: var(--font-md); font-weight: bold; }
-
-/* Body — matching old .auth-page */
-.login-body {
-  padding: 40px var(--spacing-xxl);
-}
-
-.login-logo {
+  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 40px;
+  padding: 0 30px;
 }
 
-.logo-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0056B3, #0078E7);
+/* Logo */
+.auth-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 60px;
+  margin-bottom: 48px;
+  gap: 8px;
+}
+
+.auth-logo {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  background: #0056B3;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 8px;
+  box-shadow: 0 4px 16px rgba(0,86,179,0.35);
 }
 
-.logo-text { font-size: 36px; font-weight: bold; color: white; }
-
-.login-welcome {
-  font-size: var(--font-xl);
-  font-weight: bold;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-xs);
+.auth-logo-text {
+  font-size: 36px;
+  font-weight: 900;
+  color: #fff;
 }
 
-.login-subtitle { font-size: var(--font-sm); color: var(--color-text-hint); }
+.auth-brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0056B3;
+  letter-spacing: 2px;
+}
 
-/* Form — matching old .auth-form */
-.login-form { width: 100%; }
+.auth-welcome {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin-top: 4px;
+}
 
-.form-field {
+/* 表单 */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.input-group {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: 14px var(--spacing-lg);
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-lg);
-  border: none;
+  background: #F7F8FA;
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 52px;
+  border: 1px solid #eee;
+  gap: 10px;
 }
 
-.form-field:focus-within { border-color: var(--color-primary); }
+.input-group:focus-within {
+  border-color: #0056B3;
+  background: #fff;
+}
 
-.form-input {
+.input-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.auth-input {
   flex: 1;
-  font-size: var(--font-base);
-  color: var(--color-text-primary);
+  height: 52px;
+  font-size: 15px;
+  color: #333;
   background: transparent;
 }
 
-/* Button — matching old .auth-btn */
-.login-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #0056B3, #0078E7);
-  border-radius: 24px;
-  padding: 14px;
-  text-align: center;
-  margin-top: var(--spacing-sm);
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
+.pwd-toggle {
+  padding: 4px;
+  font-size: 16px;
 }
 
-.login-btn:active { opacity: 0.8; }
-.login-btn.disabled { opacity: 0.6; }
+/* 提交按钮 */
+.auth-submit-btn {
+  background: #0056B3;
+  color: #fff;
+  height: 52px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 10px;
+  box-shadow: 0 4px 14px rgba(0,86,179,0.3);
+}
 
-.login-btn-text { color: white; font-size: var(--font-md); font-weight: bold; }
+.auth-submit-btn.disabled {
+  background: #aac4e6;
+  box-shadow: none;
+}
 
-/* Links — matching old .auth-link */
-.login-links {
-  text-align: center;
-  margin-top: var(--spacing-xl);
+/* 切换 */
+.auth-switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.auth-switch-text {
   font-size: 14px;
-  color: var(--color-text-hint);
+  color: #999;
 }
 
-.link-text { font-size: var(--font-sm); color: var(--color-primary); }
+.auth-switch-link {
+  font-size: 14px;
+  color: #0056B3;
+  font-weight: 600;
+}

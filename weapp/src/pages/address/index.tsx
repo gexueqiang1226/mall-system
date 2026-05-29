@@ -1,8 +1,8 @@
 import { Component } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
 interface Address {
   id: number
@@ -12,103 +12,116 @@ interface Address {
   city: string
   district: string
   detail: string
-  isDefault: number
+  isDefault: boolean
 }
 
-interface AddressState {
+interface State {
   addresses: Address[]
   loading: boolean
-  mode: string
+  userId: number
 }
 
-export default class AddressPage extends Component<{}, AddressState> {
-  constructor(props) {
-    super(props)
-    this.state = { addresses: [], loading: false, mode: 'manage' }
+export default class AddressList extends Component<{}, State> {
+  state: State = {
+    addresses: [],
+    loading: false,
+    userId: 0,
   }
 
-  componentDidMount() {
-    const pages = Taro.getCurrentPages()
-    const currentPage = pages[pages.length - 1]
-    this.setState({ mode: currentPage.options?.mode || 'manage' })
-    this.loadAddresses()
-  }
-
-  loadAddresses = async () => {
+  componentDidShow() {
     const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) return
+    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    this.setState({ userId }, () => { if (userId) this.loadAddresses() })
+  }
+
+  async loadAddresses() {
+    const { userId } = this.state
     this.setState({ loading: true })
     try {
-      const res = await api.get('/addresses', { userId: userInfo.userId })
-      this.setState({ addresses: res.data || [], loading: false })
-    } catch { this.setState({ loading: false }) }
-  }
-
-  selectAddress = (addr: Address) => {
-    if (this.state.mode === 'select') {
-      Taro.setStorageSync('SELECTED_ADDRESS', addr)
-      Taro.navigateBack()
+      const res = await api.get('/addresses', { userId })
+      this.setState({ addresses: res?.data || [], loading: false })
+    } catch {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+      this.setState({ loading: false })
     }
   }
 
-  editAddress = (id: number, e: any) => {
-    e.stopPropagation()
-    Taro.navigateTo({ url: `/pages/address-form/index?id=${id}` })
+  async setDefault(addr: Address) {
+    try {
+      await api.put(`/addresses/${addr.id}/default?userId=${this.state.userId}`, {})
+      this.loadAddresses()
+    } catch {
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    }
   }
 
-  deleteAddress = async (id: number, e: any) => {
-    e.stopPropagation()
-    Taro.showModal({ title: '提示', content: '确认删除该地址？', success: async (res) => {
-      if (res.confirm) {
-        await api.delete(`/addresses/${id}`)
-        Taro.showToast({ title: '已删除', icon: 'success' })
-        this.loadAddresses()
-      }
-    }})
+  async deleteAddress(addr: Address) {
+    Taro.showModal({
+      title: '删除地址',
+      content: '确定要删除这个地址吗？',
+      success: async res => {
+        if (res.confirm) {
+          try {
+            await api.delete(`/addresses/${addr.id}`)
+            this.setState(prev => ({ addresses: prev.addresses.filter(a => a.id !== addr.id) }))
+            Taro.showToast({ title: '已删除', icon: 'success' })
+          } catch {
+            Taro.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      },
+    })
   }
 
-  setDefault = async (id: number, e: any) => {
-    e.stopPropagation()
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    await api.put(`/addresses/${id}/default`, { userId: userInfo.userId })
-    this.loadAddresses()
+  goAddressForm(addrId?: number) {
+    const url = addrId
+      ? `/pages/address-form/index?id=${addrId}`
+      : '/pages/address-form/index'
+    Taro.navigateTo({ url })
   }
-
-  goAdd = () => Taro.navigateTo({ url: '/pages/address-form/index' })
-  goBack = () => Taro.navigateBack()
 
   render() {
-    const { addresses, loading, mode } = this.state
+    const { addresses, loading } = this.state
+
     return (
-      <View className="address-page">
-        <View className="addr-header">
-          <View className="addr-back" onClick={this.goBack}><Text>‹</Text></View>
-          <Text className="addr-title">收货地址</Text>
-          <View style={{ width: '32px' }} />
-        </View>
-        <ScrollView scrollY className="addr-scroll">
-          {loading && <View className="loading-spinner" />}
-          {addresses.map((a) => (
-            <View key={a.id} className="addr-card" onClick={() => this.selectAddress(a)}>
-              <View className="addr-card-info">
-                <View className="addr-card-name-row">
-                  <Text className="addr-card-name">{a.receiver}</Text>
-                  <Text className="addr-card-phone">{a.phone}</Text>
-                  {a.isDefault === 1 && <Text className="addr-default-tag">默认</Text>}
+      <View className='address-page'>
+        <ScrollView className='addr-scroll' scrollY>
+          {addresses.map(addr => (
+            <View className='addr-card' key={addr.id}>
+              <View className='addr-main' onClick={() => this.goAddressForm(addr.id)}>
+                <View className='addr-top'>
+                  <Text className='addr-receiver'>{addr.receiver}</Text>
+                  <Text className='addr-phone'>{addr.phone}</Text>
+                  {addr.isDefault && <View className='default-badge'>默认</View>}
                 </View>
-                <Text className="addr-card-detail">{a.province}{a.city}{a.district}{a.detail}</Text>
+                <Text className='addr-full'>
+                  {addr.province}{addr.city}{addr.district} {addr.detail}
+                </Text>
               </View>
-              <View className="addr-card-actions">
-                <Text className="addr-action-btn" onClick={(e) => this.editAddress(a.id, e)}>编辑</Text>
-                {a.isDefault !== 1 && <Text className="addr-action-btn" onClick={(e) => this.setDefault(a.id, e)}>设为默认</Text>}
-                <Text className="addr-action-btn danger" onClick={(e) => this.deleteAddress(a.id, e)}>删除</Text>
+              <View className='addr-actions'>
+                {!addr.isDefault && (
+                  <Text className='addr-action-btn' onClick={() => this.setDefault(addr)}>设为默认</Text>
+                )}
+                <Text className='addr-action-btn edit' onClick={() => this.goAddressForm(addr.id)}>编辑</Text>
+                <Text className='addr-action-btn delete' onClick={() => this.deleteAddress(addr)}>删除</Text>
               </View>
             </View>
           ))}
-          {!loading && addresses.length === 0 && <View className="empty-state">暂无收货地址</View>}
+
+          {!loading && addresses.length === 0 && (
+            <View className='empty-tip'>
+              <Text className='empty-icon'>📍</Text>
+              <Text className='empty-text'>还没有收货地址</Text>
+            </View>
+          )}
+          {loading && <View className='loading-tip'>加载中...</View>}
+
+          <View style={{ height: '80px' }} />
         </ScrollView>
-        <View className="addr-footer">
-          <View className="addr-add-btn" onClick={this.goAdd}><Text className="addr-add-text">+ 新增地址</Text></View>
+
+        {/* 底部新增按钮 */}
+        <View className='add-addr-bar' onClick={() => this.goAddressForm()}>
+          <Text>+ 新增收货地址</Text>
         </View>
       </View>
     )

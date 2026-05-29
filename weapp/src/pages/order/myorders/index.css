@@ -1,57 +1,42 @@
-/* ==========================================
-   My Orders Page — Sam's Club Style
-   ========================================== */
+page {
+  background: #F5F5F5;
+}
 
-.myorders-container {
+.my-orders-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--color-bg);
+  background: #F5F5F5;
 }
 
-.mo-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
-  background: var(--color-white);
-}
-
-.mo-back {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.mo-title {
-  font-size: var(--font-md);
-  font-weight: bold;
-}
-
+/* Tab栏 */
 .tab-bar {
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab-scroll {
   display: flex;
-  background: var(--color-white);
-  border-bottom: 1px solid var(--color-border);
-  overflow-x: auto;
   white-space: nowrap;
 }
 
 .tab-item {
-  flex-shrink: 0;
-  text-align: center;
-  padding: 12px 14px;
-  font-size: var(--font-sm);
-  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #666;
   position: relative;
+  flex-shrink: 0;
 }
 
 .tab-item.active {
-  color: var(--color-primary);
-  font-weight: bold;
+  color: #0056B3;
+  font-weight: 700;
 }
 
 .tab-item.active::after {
@@ -60,141 +45,153 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-primary);
+  width: 24px;
+  height: 2px;
+  background: #0056B3;
+  border-radius: 1px;
 }
 
+/* 订单列表 */
 .orders-scroll {
   flex: 1;
-  padding: var(--spacing-md);
+  height: 0;
+  flex: 1;
 }
 
+/* 订单卡片 */
 .order-card {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  box-shadow: var(--shadow-card);
+  background: #fff;
+  margin: 8px 10px 0;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
-.order-header {
+.order-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid var(--color-divider);
+  margin-bottom: 12px;
 }
 
-.order-no {
-  font-size: var(--font-sm);
-  color: var(--color-text-primary);
+.order-store {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
 }
 
 .order-status {
-  font-size: var(--font-sm);
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.order-status.pending { color: #FF4D4F; }
-.order-status.paid { color: #52c41a; }
-.order-status.shipped { color: var(--color-primary); }
-.order-status.completed { color: var(--color-text-hint); }
-.order-status.cancelled { color: var(--color-text-hint); }
-.order-status.refunding { color: #FF9800; }
-
-.order-product {
+/* 商品预览 */
+.order-items-scroll {
   display: flex;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) 0;
+  white-space: nowrap;
+  margin-bottom: 12px;
 }
 
-.order-prod-img {
-  width: 50px;
-  height: 50px;
-  border-radius: var(--radius-sm);
+.order-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  margin-right: 8px;
   flex-shrink: 0;
-  background: var(--color-divider);
+  display: inline-block;
 }
 
-.order-prod-info {
-  flex: 1;
+.order-thumb-more {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #999;
+  flex-shrink: 0;
 }
 
-.prod-name {
-  font-size: var(--font-sm);
-  color: var(--color-text-primary);
-  display: block;
-}
-
-.prod-specs {
-  font-size: 10px;
-  color: var(--color-text-hint);
-  display: block;
-  margin-top: 2px;
-}
-
-.prod-price {
-  font-size: var(--font-sm);
-  color: var(--color-danger);
-  display: block;
-  margin-top: 2px;
-}
-
-.order-footer-row {
+.order-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: var(--spacing-sm);
-  border-top: 1px solid var(--color-divider);
+  padding-top: 10px;
+  border-top: 1px solid #f5f5f5;
 }
 
-.order-time {
-  font-size: var(--font-xs);
-  color: var(--color-text-hint);
-}
-
-.order-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.order-btn {
-  padding: 4px 12px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-}
-
-.order-btn.primary {
-  border-color: var(--color-primary);
-}
-
-.order-btn.danger {
-  border-color: var(--color-danger);
-}
-
-.order-btn-text {
-  font-size: var(--font-xs);
-  color: var(--color-text-primary);
-}
-
-.order-btn.primary .order-btn-text {
-  color: var(--color-primary);
-}
-
-.order-btn.danger .order-btn-text {
-  color: var(--color-danger);
-}
-
-.refund-text {
-  font-size: var(--font-xs);
-  color: #FF9800;
+.order-items-count {
+  font-size: 12px;
+  color: #999;
 }
 
 .order-total {
-  font-size: var(--font-sm);
-  color: var(--color-danger);
-  font-weight: bold;
+  font-size: 13px;
+  color: #333;
+}
+
+.order-total-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FF2D2D;
+}
+
+/* 操作按钮 */
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.order-action-btn {
+  padding: 7px 18px;
+  border-radius: 18px;
+  font-size: 13px;
+  color: #0056B3;
+  border: 1px solid #0056B3;
+}
+
+.order-action-btn.primary {
+  background: #0056B3;
+  color: #fff;
+  border-color: #0056B3;
+}
+
+/* 状态提示 */
+.loading-tip,
+.no-more-tip {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.empty-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 0;
+  gap: 12px;
+}
+
+.empty-icon {
+  font-size: 52px;
+}
+
+.empty-text {
+  font-size: 15px;
+  color: #999;
+}
+
+.go-shop-btn {
+  background: #0056B3;
+  color: #fff;
+  padding: 10px 32px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
 }

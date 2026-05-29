@@ -29,7 +29,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 String kw = "%" + params.get("keyword") + "%";
                 wrapper.and(w -> w.like("product_name", params.get("keyword")).or().like("product_code", params.get("keyword")));
             }
-            String sortBy = (String) params.getOrDefault("sortBy", "create_time");
+            String sortByRaw = (String) params.getOrDefault("sortBy", "createTime");
+            // 驼峰转下划线: soldCount → sold_count, salePrice → sale_price
+            String sortBy = sortByRaw.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
             String order = (String) params.getOrDefault("order", "desc");
             if ("asc".equalsIgnoreCase(order)) {
                 wrapper.orderByAsc(sortBy);

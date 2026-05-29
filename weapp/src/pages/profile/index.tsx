@@ -1,90 +1,115 @@
 import { Component } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, Input, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
-interface ProfileState {
-  user: any
+interface State {
+  nickname: string
+  phone: string
+  email: string
+  userId: number
   loading: boolean
+  saving: boolean
 }
 
-export default class Profile extends Component<{}, ProfileState> {
-  constructor(props) {
-    super(props)
-    this.state = { user: null, loading: true }
+export default class Profile extends Component<{}, State> {
+  state: State = {
+    nickname: '',
+    phone: '',
+    email: '',
+    userId: 0,
+    loading: true,
+    saving: false,
   }
 
-  componentDidMount() { this.loadProfile() }
-
-  loadProfile = async () => {
+  componentDidMount() {
     const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) { Taro.showToast({ title: '请先登录', icon: 'error' }); return }
-    try {
-      const res = await api.get('/user/profile', { userId: userInfo.userId })
-      this.setState({ user: res.data || res, loading: false })
-    } catch { this.setState({ loading: false }) }
-  }
-
-  doLogout = () => {
-    Taro.showModal({
-      title: '提示', content: '确定要退出登录吗？', confirmColor: '#E53935',
-      success: (res) => {
-        if (res.confirm) {
-          Taro.removeStorageSync('USER_INFO')
-          Taro.removeStorageSync('TOKEN')
-          Taro.showToast({ title: '已退出', icon: 'success' })
-          setTimeout(() => Taro.navigateBack(), 1000)
-        }
-      },
+    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    if (!userId) { Taro.navigateTo({ url: '/pages/login/index' }); return }
+    this.setState({
+      userId,
+      nickname: userInfo?.nickname || '',
+      phone: userInfo?.phone || '',
+      email: userInfo?.email || '',
+      loading: false,
     })
   }
 
-  goBack = () => Taro.navigateBack()
+  async handleSave() {
+    const { userId, nickname, phone, email, saving } = this.state
+    if (!nickname.trim()) { Taro.showToast({ title: '请输入昵称', icon: 'none' }); return }
+    if (saving) return
+    this.setState({ saving: true })
+    try {
+      await api.put('/user/profile', { userId, nickname: nickname.trim(), phone: phone.trim(), email: email.trim() })
+      const userInfo = Taro.getStorageSync('USER_INFO') || {}
+      Taro.setStorageSync('USER_INFO', { ...userInfo, nickname: nickname.trim(), phone: phone.trim(), email: email.trim() })
+      Taro.showToast({ title: '保存成功', icon: 'success' })
+      this.setState({ saving: false })
+    } catch {
+      Taro.showToast({ title: '保存失败', icon: 'none' })
+      this.setState({ saving: false })
+    }
+  }
 
-  formatTime = (t: string) => {
-    if (!t) return ''
-    const d = new Date(t)
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  getAvatarText() {
+    return (this.state.nickname || 'U').charAt(0).toUpperCase()
   }
 
   render() {
-    const { user, loading } = this.state
-    if (loading) return <View className="profile-page"><View className="loading-spinner" /></View>
-    if (!user) return <View className="profile-page"><View className="empty-state">加载失败</View></View>
-    const initial = (user.username || 'U').charAt(0).toUpperCase()
+    const { nickname, phone, email, loading, saving } = this.state
+    if (loading) return <View className='loading-page'><Text>加载中...</Text></View>
+
     return (
-      <View className="profile-page">
-        <View className="profile-header-bar">
-          <View className="profile-back" onClick={this.goBack}><Text>‹</Text></View>
-          <Text className="profile-page-title">个人资料</Text>
-          <View style={{ width: '32px' }} />
-        </View>
-        <ScrollView scrollY className="profile-scroll">
-          <View className="profile-avatar-section">
-            <View className="profile-avatar-circle"><Text className="profile-avatar-text">{initial}</Text></View>
-            <Text className="profile-username">{user.username}</Text>
+      <View className='profile-page'>
+        <ScrollView className='profile-scroll' scrollY>
+          {/* 头像 */}
+          <View className='avatar-section'>
+            <View className='big-avatar'>
+              <Text className='avatar-text'>{this.getAvatarText()}</Text>
+            </View>
+            <Text className='avatar-hint'>点击更换头像</Text>
           </View>
-          <View className="section-card">
-            <View className="profile-row">
-              <Text className="profile-label">用户名</Text>
-              <Text className="profile-val">{user.username}</Text>
+
+          {/* 表单 */}
+          <View className='form-card'>
+            <View className='form-item'>
+              <Text className='form-label'>昵称</Text>
+              <Input
+                className='form-input'
+                placeholder='请输入昵称'
+                value={nickname}
+                onInput={e => this.setState({ nickname: e.detail.value })}
+              />
             </View>
-            <View className="profile-row">
-              <Text className="profile-label">手机号</Text>
-              <Text className="profile-val">{user.phone || '未绑定'}</Text>
+            <View className='form-item'>
+              <Text className='form-label'>手机号</Text>
+              <Input
+                className='form-input'
+                placeholder='请输入手机号'
+                type='number'
+                value={phone}
+                onInput={e => this.setState({ phone: e.detail.value })}
+              />
             </View>
-            <View className="profile-row">
-              <Text className="profile-label">积分</Text>
-              <Text className="profile-val">{user.points || 0}</Text>
-            </View>
-            <View className="profile-row">
-              <Text className="profile-label">注册时间</Text>
-              <Text className="profile-val">{this.formatTime(user.createTime || user.created_at)}</Text>
+            <View className='form-item no-border'>
+              <Text className='form-label'>邮箱</Text>
+              <Input
+                className='form-input'
+                placeholder='请输入邮箱'
+                type='email'
+                value={email}
+                onInput={e => this.setState({ email: e.detail.value })}
+              />
             </View>
           </View>
-          <View className="logout-wrap">
-            <View className="logout-btn" onClick={this.doLogout}><Text className="logout-text">退出登录</Text></View>
+
+          <View
+            className={`save-btn ${saving ? 'disabled' : ''}`}
+            onClick={this.handleSave.bind(this)}
+          >
+            <Text>{saving ? '保存中...' : '保存修改'}</Text>
           </View>
         </ScrollView>
       </View>

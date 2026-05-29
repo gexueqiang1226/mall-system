@@ -1,90 +1,109 @@
-/* ==========================================
-   Profile Page — Matched from sams-mall-css.css
-   ========================================== */
-
-.profile-page { min-height: 100vh; background: var(--color-bg); }
-
-.profile-header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
-  background: white;
+page {
+  background: #F5F5F5;
 }
 
-.profile-back {
-  width: 32px;
-  height: 32px;
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #F5F5F5;
+}
+
+.loading-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  height: 100vh;
+  font-size: 14px;
+  color: #999;
 }
 
-.profile-page-title { font-size: var(--font-md); font-weight: bold; }
-.profile-scroll { height: calc(100vh - 60px - env(safe-area-inset-top, 44px)); }
+.profile-scroll {
+  height: 100vh;
+}
 
-/* Avatar Section — matching old .profile-avatar-area */
-.profile-avatar-section {
-  background: var(--color-primary);
-  padding: 30px;
+/* 头像区 */
+.avatar-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 30px 0 20px;
+  background: #fff;
+  margin-bottom: 10px;
 }
 
-.profile-avatar-circle {
-  width: 72px;
-  height: 72px;
+.big-avatar {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: #0056B3;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(0,86,179,0.3);
 }
 
-.profile-avatar-text { font-size: 32px; color: white; font-weight: bold; }
-.profile-username { font-size: var(--font-lg); color: white; margin-top: var(--spacing-md); font-weight: bold; }
-
-/* Profile Section — matching old .profile-section */
-.profile-section {
-  margin: 12px;
-  background: white;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+.avatar-text {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
 }
 
-.profile-row {
+.avatar-hint {
+  font-size: 13px;
+  color: #999;
+}
+
+/* 表单 */
+.form-card {
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.form-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid #f5f5f5;
+  gap: 12px;
+}
+
+.form-item.no-border {
+  border-bottom: none;
+}
+
+.form-label {
   font-size: 14px;
+  color: #333;
+  min-width: 56px;
+  flex-shrink: 0;
 }
 
-.profile-row:last-child { border-bottom: none; }
-.profile-label { font-size: 14px; color: var(--color-text-secondary); }
-.profile-val { font-size: 14px; color: var(--color-text-primary); }
-
-/* Logout */
-.logout-wrap { padding: var(--spacing-xxl) var(--spacing-lg); }
-
-.logout-btn {
-  background: white;
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  text-align: center;
+.form-input {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  text-align: right;
+  height: 24px;
 }
 
-.logout-text { color: var(--color-accent); font-size: var(--font-base); }
+/* 保存按钮 */
+.save-btn {
+  margin: 4px 16px;
+  background: #0056B3;
+  color: #fff;
+  height: 48px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0,86,179,0.3);
+}
 
-/* Password Form — matching old .password-form */
-.password-form {
-  margin: 12px;
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: 16px;
+.save-btn.disabled {
+  background: #aac4e6;
+  box-shadow: none;
 }

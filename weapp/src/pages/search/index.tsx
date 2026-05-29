@@ -1,113 +1,198 @@
 import { Component } from 'react'
-import { View, Text, Input, ScrollView, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, Input, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
 interface Product {
   id: number
   productName: string
   mainImage: string
   salePrice: number
-  sellableStock: number
+  marketPrice: number
+  soldCount: number
 }
 
-interface SearchState {
+const HOT_KEYWORDS = ['iPhone', 'Nike', '咖啡', '面膜', '零食', '耳机', '牛排', '有机食品']
+const HISTORY_KEY = 'SEARCH_HISTORY'
+
+interface State {
   keyword: string
+  focused: boolean
+  history: string[]
   products: Product[]
-  total: number
-  loading: boolean
   searched: boolean
-  failedImages: Set<number>
+  loading: boolean
+  sortBy: string
+  order: string
+  page: number
+  hasMore: boolean
 }
 
-export default class Search extends Component<{}, SearchState> {
-  constructor(props) {
-    super(props)
-    this.state = { keyword: '', products: [], total: 0, loading: false, searched: false, failedImages: new Set() }
+export default class Search extends Component<{}, State> {
+  state: State = {
+    keyword: '',
+    focused: false,
+    history: [],
+    products: [],
+    searched: false,
+    loading: false,
+    sortBy: 'default',
+    order: 'desc',
+    page: 1,
+    hasMore: true,
   }
 
   componentDidMount() {
-    const pages = Taro.getCurrentPages()
-    const currentPage = pages[pages.length - 1]
-    const keyword = currentPage.options?.keyword || ''
-    if (keyword) {
-      this.setState({ keyword }, () => this.doSearch())
-    }
+    const history = Taro.getStorageSync(HISTORY_KEY) || []
+    this.setState({ history })
   }
 
-  doSearch = async () => {
-    const { keyword } = this.state
+  addHistory(kw: string) {
+    const hist = [kw, ...this.state.history.filter(h => h !== kw)].slice(0, 10)
+    this.setState({ history: hist })
+    Taro.setStorageSync(HISTORY_KEY, hist)
+  }
+
+  clearHistory() {
+    this.setState({ history: [] })
+    Taro.setStorageSync(HISTORY_KEY, [])
+  }
+
+  async doSearch(kw?: string, reset = true) {
+    const keyword = kw !== undefined ? kw : this.state.keyword
     if (!keyword.trim()) return
-    this.setState({ loading: true, searched: true })
+    const { sortBy, order, page } = this.state
+    const nextPage = reset ? 1 : page + 1
+    if (reset) this.setState({ keyword, searched: true, loading: true, products: [] })
+    else this.setState({ loading: true })
+    this.addHistory(keyword.trim())
     try {
-      const res = await api.get('/products', { keyword: keyword.trim(), size: 100 })
-      const products = (res.data?.items || []).map((p: Product) => ({ ...p, mainImage: p.mainImage || '' }))
-      this.setState({ products, total: res.data?.total || 0, loading: false })
-    } catch (e) {
+      const params: any = { keyword: keyword.trim(), page: nextPage, size: 20, order }
+      if (sortBy !== 'default') params.sortBy = sortBy
+      const res = await api.get('/products', params)
+      const items: Product[] = res?.data?.items || []
+      this.setState(prev => ({
+        products: reset ? items : [...prev.products, ...items],
+        page: nextPage,
+        hasMore: items.length >= 20,
+        loading: false,
+      }))
+    } catch {
+      Taro.showToast({ title: '搜索失败', icon: 'none' })
       this.setState({ loading: false })
     }
   }
 
-  handleInput = (e) => this.setState({ keyword: e.detail.value })
-
-  goToDetail = (id: number) => Taro.navigateTo({ url: `/pages/product/detail/index?id=${id}` })
-
-  addToCart = async (p: Product, e: any) => {
-    e.stopPropagation()
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) { Taro.showToast({ title: '请先登录', icon: 'error' }); return }
-    try {
-      await api.post('/cart', { userId: userInfo.userId, productId: p.id, quantity: 1 })
-      Taro.showToast({ title: '已加入购物车', icon: 'success' })
-    } catch { Taro.showToast({ title: '操作失败', icon: 'error' }) }
+  setSort(sortBy: string, order: string) {
+    this.setState({ sortBy, order }, () => this.doSearch(undefined, true))
   }
 
-  handleImageError = (id: number) => {
-    this.setState((prev) => { const s = new Set(prev.failedImages); s.add(id); return { failedImages: s } })
+  goProduct(id: number) {
+    Taro.navigateTo({ url: `/pages/product/detail/index?id=${id}` })
   }
-
-  goBack = () => Taro.navigateBack()
 
   render() {
-    const { keyword, products, total, loading, searched, failedImages } = this.state
+    const { keyword, history, products, searched, loading, sortBy, order, hasMore } = this.state
+
     return (
-      <View className="search-page">
-        <View className="search-header">
-          <View className="search-bar-row">
-            <View className="search-back" onClick={this.goBack}><Text>‹</Text></View>
-            <View className="search-input-box">
-              <Input className="search-input" placeholder="搜索商品" value={keyword} onInput={this.handleInput} confirmType="search" onConfirm={this.doSearch} autoFocus />
-            </View>
-            <View className="search-btn" onClick={this.doSearch}><Text className="search-btn-text">搜索</Text></View>
+      <View className='search-page'>
+        {/* 搜索栏 */}
+        <View className='search-header'>
+          <Text className='back-btn' onClick={() => Taro.navigateBack()}>‹</Text>
+          <View className='search-input-wrap'>
+            <Text className='search-icon-inner'>🔍</Text>
+            <Input
+              className='search-input'
+              placeholder='搜索商品、品牌'
+              value={keyword}
+              focus
+              onInput={e => this.setState({ keyword: e.detail.value })}
+              onConfirm={() => this.doSearch()}
+            />
+            {keyword.length > 0 && (
+              <Text className='clear-btn' onClick={() => this.setState({ keyword: '', searched: false, products: [] })}>✕</Text>
+            )}
           </View>
+          <Text className='search-btn' onClick={() => this.doSearch()}>搜索</Text>
         </View>
-        <ScrollView scrollY className="search-scroll">
-          {searched && <Text className="search-count">搜索"{keyword}"，共{total}件商品</Text>}
-          {loading && <View className="loading-spinner" />}
-          {!loading && products.map((p) => {
-            const soldOut = p.sellableStock !== undefined && p.sellableStock <= 0
-            return (
-              <View key={p.id} className="search-card" onClick={() => this.goToDetail(p.id)}>
-                {failedImages.has(p.id) || !p.mainImage ? (
-                  <View className="search-card-img" style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: '24px' }}>📦</Text></View>
-                ) : (
-                  <Image src={p.mainImage} mode="aspectFill" className="search-card-img" onError={() => this.handleImageError(p.id)} />
-                )}
-                <View className="search-card-info">
-                  <Text className="search-card-name" numberOfLines={2}>{p.productName}</Text>
-                  <View className="search-card-bottom">
-                    <Text className="search-card-price">¥{p.salePrice}</Text>
-                    {soldOut ? <Text className="search-card-soldout">已售罄</Text> : (
-                      <View className="search-add-btn" onClick={(e) => this.addToCart(p, e)}><Text style={{ color: '#fff', fontSize: '14px' }}>+</Text></View>
-                    )}
+
+        {!searched ? (
+          <ScrollView className='search-body' scrollY>
+            {/* 热门搜索 */}
+            <View className='section-card'>
+              <Text className='section-title'>热门搜索</Text>
+              <View className='hot-tags'>
+                {HOT_KEYWORDS.map((kw, i) => (
+                  <View key={i} className={`hot-tag ${i < 3 ? 'hot' : ''}`} onClick={() => this.doSearch(kw)}>
+                    <Text>{kw}</Text>
                   </View>
+                ))}
+              </View>
+            </View>
+
+            {/* 搜索历史 */}
+            {history.length > 0 && (
+              <View className='section-card'>
+                <View className='history-header'>
+                  <Text className='section-title'>搜索历史</Text>
+                  <Text className='clear-history' onClick={this.clearHistory.bind(this)}>清空</Text>
+                </View>
+                <View className='history-list'>
+                  {history.map((h, i) => (
+                    <View key={i} className='history-item' onClick={() => this.doSearch(h)}>
+                      <Text className='history-icon'>🕐</Text>
+                      <Text className='history-text'>{h}</Text>
+                    </View>
+                  ))}
                 </View>
               </View>
-            )
-          })}
-          {!loading && searched && products.length === 0 && <View className="empty-state">未找到相关商品</View>}
-        </ScrollView>
+            )}
+          </ScrollView>
+        ) : (
+          <View className='result-wrap'>
+            {/* 排序栏 */}
+            <View className='sort-bar'>
+              <Text className={`sort-item ${sortBy === 'default' ? 'active' : ''}`} onClick={() => this.setSort('default', 'desc')}>综合</Text>
+              <Text className={`sort-item ${sortBy === 'soldCount' ? 'active' : ''}`} onClick={() => this.setSort('soldCount', 'desc')}>销量</Text>
+              <Text
+                className={`sort-item ${sortBy === 'salePrice' ? 'active' : ''}`}
+                onClick={() => this.setSort('salePrice', order === 'asc' ? 'desc' : 'asc')}
+              >
+                价格{sortBy === 'salePrice' ? (order === 'asc' ? '↑' : '↓') : ''}
+              </Text>
+            </View>
+
+            <ScrollView
+              className='result-scroll'
+              scrollY
+              onScrollToLower={() => this.doSearch(undefined, false)}
+            >
+              <View className='product-grid'>
+                {products.map(p => (
+                  <View className='product-card' key={p.id} onClick={() => this.goProduct(p.id)}>
+                    <Image className='product-img' src={p.mainImage} mode='aspectFill' />
+                    <View className='product-info'>
+                      <Text className='product-name'>{p.productName}</Text>
+                      <Text className='product-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
+                      {p.marketPrice > p.salePrice && (
+                        <Text className='product-mkt'>¥{Number(p.marketPrice).toFixed(2)}</Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+              {loading && <View className='tip'>搜索中...</View>}
+              {!loading && !hasMore && products.length > 0 && <View className='tip'>— 已经到底了 —</View>}
+              {!loading && products.length === 0 && (
+                <View className='empty-tip'>
+                  <Text className='empty-icon'>🔍</Text>
+                  <Text className='empty-text'>没有找到相关商品</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
       </View>
     )
   }

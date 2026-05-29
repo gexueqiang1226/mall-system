@@ -1,1 +1,2 @@
-/* register page reuses login page styles */
+/* 复用登录页样式 */
+@import '../login/index.css';

@@ -1,93 +1,121 @@
 import { Component } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
 interface Coupon {
   id: number
-  title: string
-  type: number
+  couponName: string
+  couponType: string
   discountValue: number
   minAmount: number
-  status: number
+  startTime: string
   endTime: string
+  status: number
 }
 
-interface CouponsState {
-  coupons: Coupon[]
-  activeTab: string
-  loading: boolean
-}
-
-const TYPE_LABELS: Record<number, string> = { 1: '满减', 2: '折扣', 3: '免邮' }
 const TABS = [
-  { key: '0', label: '未使用' },
-  { key: '1', label: '已使用' },
-  { key: '2', label: '已过期' },
+  { label: '未使用', status: 0 },
+  { label: '已使用', status: 1 },
+  { label: '已过期', status: 2 },
 ]
 
-export default class Coupons extends Component<{}, CouponsState> {
-  constructor(props) {
-    super(props)
-    this.state = { coupons: [], activeTab: '0', loading: false }
+interface State {
+  coupons: Coupon[]
+  activeTab: number
+  loading: boolean
+  userId: number
+}
+
+export default class Coupons extends Component<{}, State> {
+  state: State = {
+    coupons: [],
+    activeTab: 0,
+    loading: false,
+    userId: 0,
   }
 
-  componentDidMount() { this.loadCoupons() }
-
-  loadCoupons = async () => {
+  componentDidMount() {
     const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) { Taro.showToast({ title: '请先登录', icon: 'error' }); return }
+    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    this.setState({ userId }, () => { if (userId) this.loadCoupons() })
+  }
+
+  async loadCoupons() {
+    const { userId, activeTab } = this.state
     this.setState({ loading: true })
     try {
-      const res = await api.get('/coupons', { userId: userInfo.userId, status: this.state.activeTab })
-      this.setState({ coupons: res.data || [], loading: false })
-    } catch { this.setState({ loading: false }) }
+      const res = await api.get('/coupons', { userId, status: activeTab })
+      this.setState({ coupons: res?.data || [], loading: false })
+    } catch {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+      this.setState({ loading: false })
+    }
   }
 
-  switchTab = (tab: string) => {
-    this.setState({ activeTab: tab }, () => this.loadCoupons())
+  switchTab(idx: number) {
+    this.setState({ activeTab: idx }, () => this.loadCoupons())
   }
 
-  goBack = () => Taro.navigateBack()
+  getCouponGradient(status: number) {
+    if (status === 1) return 'linear-gradient(135deg, #ccc 0%, #bbb 100%)'
+    if (status === 2) return 'linear-gradient(135deg, #ccc 0%, #bbb 100%)'
+    return 'linear-gradient(135deg, #FF6B35 0%, #FF2D2D 100%)'
+  }
 
   render() {
     const { coupons, activeTab, loading } = this.state
+
     return (
-      <View className="coupons-page">
-        <View className="coupons-header">
-          <View className="coupons-back" onClick={this.goBack}><Text>‹</Text></View>
-          <Text className="coupons-title">优惠券</Text>
-          <View style={{ width: '32px' }} />
-        </View>
-        <View className="tab-bar">
-          {TABS.map((t) => (
-            <View key={t.key} className={`tab-item ${activeTab === t.key ? 'active' : ''}`} onClick={() => this.switchTab(t.key)}>
-              <Text>{t.label}</Text>
+      <View className='coupons-page'>
+        <View className='tab-bar'>
+          {TABS.map((tab, i) => (
+            <View
+              key={i}
+              className={`tab-item ${activeTab === i ? 'active' : ''}`}
+              onClick={() => this.switchTab(i)}
+            >
+              <Text>{tab.label}</Text>
             </View>
           ))}
         </View>
-        <ScrollView scrollY className="coupons-scroll">
-          {loading && <View className="loading-spinner" />}
-          {!loading && coupons.map((c) => {
-            const discount = c.type === 2 ? `${(c.discountValue / 10)}折` : `¥${c.discountValue}`
-            const minText = c.minAmount > 0 ? `满${c.minAmount}可用` : '无门槛'
-            const endDate = c.endTime ? c.endTime.split(' ')[0] : '长期有效'
-            return (
-              <View key={c.id} className={`coupon-card ${c.status === 1 ? 'used' : ''}`}>
-                <View className="coupon-left">
-                  <Text className="coupon-type">{TYPE_LABELS[c.type] || '优惠'}</Text>
-                  <Text className="coupon-value">{discount}</Text>
-                </View>
-                <View className="coupon-right">
-                  <Text className="coupon-title">{c.title}</Text>
-                  <Text className="coupon-min">{minText}</Text>
-                  <Text className="coupon-date">有效期至 {endDate}</Text>
-                </View>
+
+        <ScrollView className='coupons-scroll' scrollY>
+          {coupons.map(c => (
+            <View key={c.id} className='coupon-card'>
+              <View className='coupon-left' style={{ background: this.getCouponGradient(c.status) }}>
+                <Text className='coupon-value'>¥{c.discountValue}</Text>
+                <Text className='coupon-min'>满{c.minAmount}元可用</Text>
               </View>
-            )
-          })}
-          {!loading && coupons.length === 0 && <View className="empty-state">暂无优惠券</View>}
+              <View className='coupon-divider'>
+                <View className='circle top' />
+                <View className='dash-line' />
+                <View className='circle bottom' />
+              </View>
+              <View className='coupon-right'>
+                <Text className='coupon-name'>{c.couponName}</Text>
+                <Text className='coupon-expire'>
+                  {c.endTime?.slice(0, 10)} 到期
+                </Text>
+                {c.status === 0 && (
+                  <View className='use-btn' onClick={() => Taro.switchTab({ url: '/pages/index/index' })}>
+                    <Text>去使用</Text>
+                  </View>
+                )}
+                {c.status === 1 && <Text className='used-label'>已使用</Text>}
+                {c.status === 2 && <Text className='expire-label'>已过期</Text>}
+              </View>
+            </View>
+          ))}
+
+          {!loading && coupons.length === 0 && (
+            <View className='empty-tip'>
+              <Text className='empty-icon'>🎟️</Text>
+              <Text className='empty-text'>暂无{TABS[activeTab].label}优惠券</Text>
+            </View>
+          )}
+          {loading && <View className='loading-tip'>加载中...</View>}
         </ScrollView>
       </View>
     )

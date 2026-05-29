@@ -1,104 +1,108 @@
 import { Component } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
-interface PointRecord {
+interface PointsHistory {
   id: number
+  userId: number
   points: number
   type: string
   description: string
   createTime: string
 }
 
-interface PointsState {
+interface State {
   balance: number
-  history: PointRecord[]
+  history: PointsHistory[]
   loading: boolean
+  page: number
+  hasMore: boolean
+  userId: number
 }
 
-export default class Points extends Component<{}, PointsState> {
-  constructor(props) {
-    super(props)
-    this.state = { balance: 0, history: [], loading: false }
+export default class Points extends Component<{}, State> {
+  state: State = {
+    balance: 0,
+    history: [],
+    loading: false,
+    page: 1,
+    hasMore: true,
+    userId: 0,
   }
 
-  componentDidMount() { this.loadData() }
-
-  loadData = async () => {
+  componentDidMount() {
     const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) { Taro.showToast({ title: '请先登录', icon: 'error' }); return }
+    const userId = userInfo?.id || Taro.getStorageSync('USER_ID') || 0
+    this.setState({ userId }, () => { if (userId) this.loadData() })
+  }
+
+  async loadData(reset = true) {
+    const { userId, page } = this.state
+    const nextPage = reset ? 1 : page + 1
     this.setState({ loading: true })
     try {
       const [balRes, histRes] = await Promise.all([
-        api.get('/points/balance', { userId: userInfo.userId }),
-        api.get('/points/history', { userId: userInfo.userId }),
+        api.get('/points/balance', { userId }),
+        api.get('/points/history', { userId, page: nextPage, size: 20 }),
       ])
-      this.setState({
-        balance: balRes.data?.balance || 0,
-        history: histRes.data || [],
+      const balance = balRes?.data?.balance || 0
+      const items: PointsHistory[] = histRes?.data?.items || []
+      this.setState(prev => ({
+        balance,
+        history: reset ? items : [...prev.history, ...items],
+        page: nextPage,
+        hasMore: items.length >= 20,
         loading: false,
-      })
-    } catch { this.setState({ loading: false }) }
-  }
-
-  exchangePoints = async (pts: number) => {
-    const userInfo = Taro.getStorageSync('USER_INFO')
-    if (!userInfo?.userId) return
-    try {
-      await api.post('/points/exchange', { userId: userInfo.userId, points: pts, type: 'coupon' })
-      Taro.showToast({ title: '兑换成功', icon: 'success' })
-      this.loadData()
-    } catch { Taro.showToast({ title: '兑换失败', icon: 'error' }) }
-  }
-
-  goBack = () => Taro.navigateBack()
-
-  formatTime = (t: string) => {
-    if (!t) return ''
-    const d = new Date(t)
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+      }))
+    } catch {
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+      this.setState({ loading: false })
+    }
   }
 
   render() {
-    const { balance, history, loading } = this.state
+    const { balance, history, loading, hasMore } = this.state
+
     return (
-      <View className="points-page">
-        <View className="points-header-bar">
-          <View className="points-back" onClick={this.goBack}><Text>‹</Text></View>
-          <Text className="points-page-title">积分中心</Text>
-          <View style={{ width: '32px' }} />
+      <View className='points-page'>
+        {/* 积分余额卡片 */}
+        <View className='balance-card'>
+          <Text className='balance-label'>我的积分</Text>
+          <Text className='balance-value'>{balance}</Text>
+          <Text className='balance-hint'>100积分 = ¥1抵扣</Text>
+          <View className='exchange-btn' onClick={() => Taro.showToast({ title: '积分兑换开发中', icon: 'none' })}>
+            <Text>积分兑换</Text>
+          </View>
         </View>
-        <ScrollView scrollY className="points-scroll">
-          <View className="points-balance-card">
-            <Text className="points-balance-num">{balance}</Text>
-            <Text className="points-balance-label">我的积分</Text>
-          </View>
-          <View className="section-card">
-            <View className="section-header"><Text className="section-title">积分兑换</Text></View>
-            <View className="exchange-list">
-              <View className="exchange-btn" onClick={() => this.exchangePoints(100)}><Text className="exchange-btn-text">100积分 → 满50减10券</Text></View>
-              <View className="exchange-btn" onClick={() => this.exchangePoints(500)}><Text className="exchange-btn-text">500积分 → 满200减50券</Text></View>
+
+        {/* 明细列表 */}
+        <ScrollView
+          className='history-scroll'
+          scrollY
+          onScrollToLower={() => this.loadData(false)}
+        >
+          <Text className='list-title'>积分明细</Text>
+          {history.map(item => (
+            <View className='history-item' key={item.id}>
+              <View className='history-left'>
+                <Text className='history-desc'>{item.description}</Text>
+                <Text className='history-time'>{item.createTime?.slice(0, 10)}</Text>
+              </View>
+              <Text className={`history-points ${item.points > 0 ? 'income' : 'expense'}`}>
+                {item.points > 0 ? '+' : ''}{item.points}
+              </Text>
             </View>
-          </View>
-          <View className="section-card">
-            <View className="section-header"><Text className="section-title">积分明细</Text></View>
-            {loading && <View className="loading-spinner" />}
-            {!loading && history.map((h) => {
-              const isPlus = h.points > 0
-              return (
-                <View key={h.id} className="points-item">
-                  <View className="points-item-info">
-                    <Text className="points-item-type">{h.type || h.description || '积分变动'}</Text>
-                    <Text className="points-item-time">{this.formatTime(h.createTime)}</Text>
-                  </View>
-                  <Text className={`points-item-val ${isPlus ? 'plus' : 'minus'}`}>{isPlus ? '+' : ''}{h.points}</Text>
-                </View>
-              )
-            })}
-            {!loading && history.length === 0 && <View className="empty-state">暂无积分记录</View>}
-          </View>
+          ))}
+          {loading && <View className='tip'>加载中...</View>}
+          {!loading && !hasMore && history.length > 0 && <View className='tip'>— 已经到底了 —</View>}
+          {!loading && history.length === 0 && (
+            <View className='empty-tip'>
+              <Text className='empty-icon'>⭐</Text>
+              <Text className='empty-text'>暂无积分明细</Text>
+            </View>
+          )}
         </ScrollView>
       </View>
     )

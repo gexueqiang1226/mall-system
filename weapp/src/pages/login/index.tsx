@@ -1,86 +1,107 @@
 import { Component } from 'react'
-import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import './index.css'
+import { View, Text, Input } from '@tarojs/components'
 import api from '@/services/api'
+import './index.css'
 
-interface LoginState {
+interface State {
   username: string
   password: string
+  showPwd: boolean
   loading: boolean
 }
 
-export default class Login extends Component<{}, LoginState> {
-  constructor(props) {
-    super(props)
-    this.state = { username: '', password: '', loading: false }
+export default class Login extends Component<{}, State> {
+  state: State = {
+    username: '',
+    password: '',
+    showPwd: false,
+    loading: false,
   }
 
-  handleLogin = async () => {
-    const { username, password } = this.state
-    if (!username || !password) {
-      Taro.showToast({ title: '请输入用户名和密码', icon: 'error' })
+  async handleLogin() {
+    const { username, password, loading } = this.state
+    if (!username.trim()) {
+      Taro.showToast({ title: '请输入用户名', icon: 'none' })
       return
     }
+    if (!password) {
+      Taro.showToast({ title: '请输入密码', icon: 'none' })
+      return
+    }
+    if (loading) return
     this.setState({ loading: true })
     try {
-      const response = await api.post('/auth/login', { username, password })
-      if (response.code === 0) {
-        const data = response.data
-        Taro.setStorageSync('TOKEN', data.token)
-        Taro.setStorageSync('USER_INFO', {
-          userId: data.userId,
-          username: data.username,
-          avatar: data.avatar,
-          phone: data.phone,
-          nickName: data.username,
-        })
-        Taro.showToast({ title: '登录成功', icon: 'success' })
-        setTimeout(() => Taro.switchTab({ url: '/pages/index/index' }), 1000)
-      } else {
-        Taro.showToast({ title: response.message || '登录失败', icon: 'error' })
-      }
-    } catch (error) {
-      Taro.showToast({ title: '登录失败', icon: 'error' })
+      const res = await api.post('/auth/login', { username: username.trim(), password })
+      const { token, user } = res?.data || {}
+      Taro.setStorageSync('TOKEN', token)
+      Taro.setStorageSync('USER_INFO', user)
+      Taro.setStorageSync('USER_ID', user?.id)
+      Taro.showToast({ title: '登录成功', icon: 'success' })
+      setTimeout(() => {
+        Taro.switchTab({ url: '/pages/user/index' })
+      }, 800)
+    } catch (e: any) {
+      Taro.showToast({ title: e?.message || '登录失败', icon: 'none' })
+      this.setState({ loading: false })
     }
-    this.setState({ loading: false })
   }
 
-  goRegister = () => Taro.navigateTo({ url: '/pages/register/index' })
-  goBack = () => Taro.navigateBack()
-
   render() {
-    const { username, password, loading } = this.state
+    const { username, password, showPwd, loading } = this.state
+
     return (
-      <View className="login-page">
-        <View className="login-header">
-          <View className="back-btn" onClick={this.goBack}>
-            <Text className="back-text">‹</Text>
+      <View className='auth-page'>
+        {/* Logo区 */}
+        <View className='auth-logo-wrap'>
+          <View className='auth-logo'>
+            <Text className='auth-logo-text'>S</Text>
           </View>
-          <Text className="header-title">登录</Text>
-          <View style={{ width: '32px' }} />
+          <Text className='auth-brand'>SAM'S CLUB</Text>
+          <Text className='auth-welcome'>欢迎回来</Text>
         </View>
-        <View className="login-body">
-          <View className="login-logo">
-            <View className="logo-circle">
-              <Text className="logo-text">S</Text>
-            </View>
-            <Text className="login-welcome">欢迎回来</Text>
-            <Text className="login-subtitle">登录后享受更多会员权益</Text>
+
+        {/* 表单 */}
+        <View className='auth-form'>
+          <View className='input-group'>
+            <View className='input-icon'>👤</View>
+            <Input
+              className='auth-input'
+              placeholder='请输入用户名'
+              value={username}
+              onInput={e => this.setState({ username: e.detail.value })}
+            />
           </View>
-          <View className="login-form">
-            <View className="form-field">
-              <Input className="form-input" placeholder="请输入用户名" value={username} onInput={(e) => this.setState({ username: e.detail.value })} />
+
+          <View className='input-group'>
+            <View className='input-icon'>🔒</View>
+            <Input
+              className='auth-input'
+              placeholder='请输入密码'
+              password={!showPwd}
+              value={password}
+              onInput={e => this.setState({ password: e.detail.value })}
+            />
+            <View className='pwd-toggle' onClick={() => this.setState({ showPwd: !showPwd })}>
+              <Text>{showPwd ? '🙈' : '👁️'}</Text>
             </View>
-            <View className="form-field">
-              <Input className="form-input" placeholder="请输入密码" type="password" value={password} onInput={(e) => this.setState({ password: e.detail.value })} />
-            </View>
-            <View className={`login-btn ${loading ? 'disabled' : ''}`} onClick={loading ? undefined : this.handleLogin}>
-              <Text className="login-btn-text">{loading ? '登录中...' : '登 录'}</Text>
-            </View>
-            <View className="login-links">
-              <Text className="link-text" onClick={this.goRegister}>没有账号？立即注册</Text>
-            </View>
+          </View>
+
+          <View
+            className={`auth-submit-btn ${loading ? 'disabled' : ''}`}
+            onClick={this.handleLogin.bind(this)}
+          >
+            <Text>{loading ? '登录中...' : '登录'}</Text>
+          </View>
+
+          <View className='auth-switch'>
+            <Text className='auth-switch-text'>没有账号？</Text>
+            <Text
+              className='auth-switch-link'
+              onClick={() => Taro.navigateTo({ url: '/pages/register/index' })}
+            >
+              去注册
+            </Text>
           </View>
         </View>
       </View>
