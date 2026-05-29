@@ -86,7 +86,8 @@ export default class ProductList extends Component<{}, State> {
   }
 
   async loadProducts(reset = false) {
-    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword } = this.state
+    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword, loading } = this.state
+    if (loading) return
     const catId = selectedSubId || selectedLeftId
     const nextPage = reset ? 1 : page + 1
     this.setState({ loading: true })

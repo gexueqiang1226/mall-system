@@ -61,6 +61,8 @@ export default class Search extends Component<{}, State> {
   }
 
   async doSearch(kw?: string, reset = true) {
+    const { loading } = this.state
+    if (loading) return
     const keyword = kw !== undefined ? kw : this.state.keyword
     if (!keyword.trim()) return
     const { sortBy, order, page } = this.state
