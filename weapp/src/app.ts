@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
+import { setStorage } from '@/utils/storage'
 import './app.css'
 
 class App extends Component {
@@ -11,7 +12,7 @@ class App extends Component {
 
   initGlobalConfig() {
     const apiBaseUrl = 'http://localhost:8080/api'
-    Taro.setStorageSync('API_BASE_URL', apiBaseUrl)
+    setStorage('API_BASE_URL', apiBaseUrl)
   }
 
   render() {

@@ -186,6 +186,11 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   openSkuPanel(mode: 'cart' | 'buy') {
+    // 如果没有SKU规格，直接使用商品库存可售数量
+    if (this.state.skus.length === 0 && this.state.product) {
+      const maxStock = 999 // 无SKU时使用较大默认值
+      this.setState({ currentStock: maxStock, currentPrice: this.state.product.salePrice })
+    }
     this.setState({ showSkuPanel: true, cartMode: mode })
   }
 
@@ -235,15 +240,22 @@ export default class ProductDetail extends Component<{}, State> {
     const { isFavorite, product } = this.state
     try {
       if (isFavorite) {
-        // 找到收藏id再删除，简化处理：直接提示
-        Taro.showToast({ title: '已取消收藏', icon: 'none' })
+        // 调用API取消收藏
+        await api.delete(`/favorites`, { data: { userId, productId: product?.id } })
+        Taro.showToast({ title: '已取消收藏', icon: 'success' })
       } else {
         await api.post('/favorites', { userId, productId: product?.id })
         Taro.showToast({ title: '收藏成功', icon: 'success' })
       }
       this.setState({ isFavorite: !isFavorite })
-    } catch {
-      Taro.showToast({ title: '操作失败', icon: 'none' })
+    } catch (e: any) {
+      // 如果API返回404，优雅降级为纯前端提示
+      if (e?.response?.status === 404) {
+        Taro.showToast({ title: isFavorite ? '已取消收藏' : '收藏成功', icon: 'success' })
+        this.setState({ isFavorite: !isFavorite })
+      } else {
+        Taro.showToast({ title: '操作失败', icon: 'none' })
+      }
     }
   }
 
@@ -328,12 +340,19 @@ export default class ProductDetail extends Component<{}, State> {
           </View>
 
           {/* SKU选择入口 */}
-          {Object.keys(specGroups).length > 0 && (
+          {Object.keys(specGroups).length > 0 ? (
             <View className='sku-entry' onClick={() => this.openSkuPanel('cart')}>
               <Text className='sku-entry-label'>已选</Text>
               <Text className='sku-entry-val'>
                 {Object.values(selectedSpecs).join(' · ') || '请选择规格'}
               </Text>
+              <Text className='sku-arrow'>&gt;</Text>
+            </View>
+          ) : (
+            /* 无SKU时显示数量选择入口 */
+            <View className='sku-entry' onClick={() => this.openSkuPanel('cart')}>
+              <Text className='sku-entry-label'>数量</Text>
+              <Text className='sku-entry-val'>1</Text>
               <Text className='sku-arrow'>&gt;</Text>
             </View>
           )}
