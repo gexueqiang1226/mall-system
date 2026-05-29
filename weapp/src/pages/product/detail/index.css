@@ -251,6 +251,16 @@ page {
   display: block;
 }
 
+.view-all-reviews {
+  padding: 12px 0 4px;
+  text-align: center;
+}
+
+.view-all-text {
+  font-size: 13px;
+  color: #0056B3;
+}
+
 /* 推荐网格 */
 .recommend-grid {
   display: flex;

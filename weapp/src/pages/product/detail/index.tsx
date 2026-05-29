@@ -60,6 +60,7 @@ interface State {
   product: Product | null
   skus: Sku[]
   reviews: Review[]
+  allReviews: Review[]
   reviewStats: ReviewStats | null
   recommends: RecommendProduct[]
   isFavorite: boolean
@@ -72,6 +73,8 @@ interface State {
   imageIndex: number
   cartMode: 'cart' | 'buy'
   loading: boolean
+  expandedReviews: boolean
+  loadingReviews: boolean
 }
 
 export default class ProductDetail extends Component<{}, State> {
@@ -79,6 +82,7 @@ export default class ProductDetail extends Component<{}, State> {
     product: null,
     skus: [],
     reviews: [],
+    allReviews: [],
     reviewStats: null,
     recommends: [],
     isFavorite: false,
@@ -91,6 +95,8 @@ export default class ProductDetail extends Component<{}, State> {
     imageIndex: 0,
     cartMode: 'cart',
     loading: true,
+    expandedReviews: false,
+    loadingReviews: false,
   }
 
   componentDidMount() {
@@ -270,6 +276,24 @@ export default class ProductDetail extends Component<{}, State> {
     return imgs.filter(Boolean)
   }
 
+  toggleReviews() {
+    if (this.state.expandedReviews) {
+      this.setState({ expandedReviews: false })
+      return
+    }
+    // 加载全部评价
+    const id = this.state.product?.id
+    if (!id) return
+    this.setState({ loadingReviews: true })
+    api.get('/reviews', { productId: id, page: 1, size: 100 }).then(res => {
+      const items: Review[] = res?.data?.items || []
+      this.setState({ allReviews: items, expandedReviews: true, loadingReviews: false })
+    }).catch(() => {
+      Taro.showToast({ title: '加载评价失败', icon: 'none' })
+      this.setState({ loadingReviews: false })
+    })
+  }
+
   renderStars(rating: number) {
     return Array(5).fill(0).map((_, i) => (
       <Text key={i} style={{ color: i < rating ? '#FF6B35' : '#ddd', fontSize: '12px' }}>★</Text>
@@ -277,7 +301,7 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   render() {
-    const { product, reviews, reviewStats, recommends, isFavorite, showSkuPanel, selectedSpecs, quantity, currentPrice, currentStock, loading } = this.state
+    const { product, reviews, allReviews, reviewStats, recommends, isFavorite, showSkuPanel, selectedSpecs, quantity, currentPrice, currentStock, loading, expandedReviews, loadingReviews } = this.state
     const images = this.getImages()
     const specGroups = this.getSpecGroups()
 
@@ -366,7 +390,7 @@ export default class ProductDetail extends Component<{}, State> {
                 <Text className='review-total'>共{reviewStats?.totalCount || 0}条</Text>
               </View>
             </View>
-            {reviews.map(r => (
+            {(expandedReviews ? allReviews : reviews.slice(0, 3)).map(r => (
               <View className='review-item' key={r.id}>
                 <View className='review-header'>
                   <View className='reviewer-avatar'>
@@ -381,7 +405,18 @@ export default class ProductDetail extends Component<{}, State> {
                 <Text className='review-content'>{r.content}</Text>
               </View>
             ))}
-            {reviews.length === 0 && <Text className='no-review'>暂无评价</Text>}
+            {loadingReviews && <Text className='no-review'>加载中...</Text>}
+            {!loadingReviews && reviews.length === 0 && <Text className='no-review'>暂无评价</Text>}
+            {!loadingReviews && !expandedReviews && reviews.length > 0 && (
+              <View className='view-all-reviews' onClick={this.toggleReviews.bind(this)}>
+                <Text className='view-all-text'>查看全部评价 ▾</Text>
+              </View>
+            )}
+            {!loadingReviews && expandedReviews && reviews.length > 0 && (
+              <View className='view-all-reviews' onClick={this.toggleReviews.bind(this)}>
+                <Text className='view-all-text'>收起评价 △</Text>
+              </View>
+            )}
           </View>
 
           {/* 推荐区 */}
