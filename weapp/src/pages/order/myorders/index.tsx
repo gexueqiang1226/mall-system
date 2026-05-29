@@ -21,7 +21,8 @@ interface Order {
   payAmount: number
   status: number
   createTime: string
-  items: OrderItem[]
+  items?: OrderItem[]
+  orderItems?: OrderItem[]
 }
 
 const TABS = [
@@ -92,7 +93,7 @@ export default class MyOrders extends Component<{}, State> {
       const params: any = { userId, page: nextPage, size: 10 }
       if (status !== '') params.status = status
       const res = await api.get('/orders', params)
-      const items: Order[] = res?.data?.items || []
+      const items: Order[] = res?.data?.records || []
       this.setState(prev => ({
         orders: reset ? items : [...prev.orders, ...items],
         page: nextPage,
@@ -136,8 +137,9 @@ export default class MyOrders extends Component<{}, State> {
   renderOrderCard(order: Order) {
     const statusLabel = STATUS_MAP[order.status] || '未知'
     const statusColor = STATUS_COLOR[order.status] || '#999'
-    const previewItems = (order.items || []).slice(0, 3)
-    const rest = (order.items || []).length - 3
+    const orderItems = order.items || order.orderItems || []
+    const previewItems = orderItems.slice(0, 3)
+    const rest = orderItems.length - 3
 
     return (
       <View className='order-card' key={order.id} onClick={() => this.goDetail(order.id)}>
