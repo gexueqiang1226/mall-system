@@ -1,18 +1,93 @@
+/* ==========================================
+   Address Page — Matched from sams-mall-css.css
+   ========================================== */
+
 .address-page { min-height: 100vh; background: var(--color-bg); padding-bottom: 70px; }
-.addr-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-lg); padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px)); background: var(--color-white); }
-.addr-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+.addr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
+  background: white;
+}
+
+.addr-back {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
 .addr-title { font-size: var(--font-md); font-weight: bold; }
 .addr-scroll { height: calc(100vh - 120px - env(safe-area-inset-top, 44px)); }
-.addr-card { background: var(--color-white); margin: var(--spacing-md); border-radius: var(--radius-md); padding: var(--spacing-lg); box-shadow: var(--shadow-card); }
-.addr-card-info {}
-.addr-card-name-row { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); }
-.addr-card-name { font-size: var(--font-md); font-weight: bold; }
-.addr-card-phone { font-size: var(--font-sm); color: var(--color-text-secondary); }
-.addr-default-tag { font-size: 10px; color: var(--color-primary); background: #E3F2FD; padding: 1px 6px; border-radius: 3px; }
-.addr-card-detail { font-size: var(--font-sm); color: var(--color-text-secondary); line-height: 1.5; }
-.addr-card-actions { display: flex; gap: var(--spacing-lg); margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--color-divider); }
-.addr-action-btn { font-size: var(--font-sm); color: var(--color-primary); }
-.addr-action-btn.danger { color: var(--color-danger); }
-.addr-footer { position: fixed; bottom: 0; left: 0; right: 0; padding: var(--spacing-md) var(--spacing-lg); padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom, 0px)); background: var(--color-white); box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
-.addr-add-btn { background: var(--color-primary); border-radius: var(--radius-md); padding: 14px; text-align: center; }
-.addr-add-text { color: var(--color-white); font-size: var(--font-md); font-weight: bold; }
+
+/* Address Card — matching old .address-card */
+.addr-card {
+  background: white;
+  margin: 10px 12px;
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.addr-card.default { border: 1px solid var(--color-primary); }
+
+.addr-card-name { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 4px; }
+.addr-card-phone { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.addr-card-detail { font-size: 13px; color: var(--color-text-secondary); line-height: 1.4; }
+
+.addr-default-tag {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.addr-card-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.addr-action-btn {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.addr-action-btn.danger { color: var(--color-accent); }
+
+/* Footer — matching old .add-address-btn */
+.addr-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-md) + env(safe-area-inset-bottom, 0px));
+  background: white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.addr-add-btn {
+  background: var(--color-primary);
+  border-radius: 20px;
+  padding: 12px;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+}
+
+.addr-add-text { color: white; font-size: 15px; font-weight: bold; }

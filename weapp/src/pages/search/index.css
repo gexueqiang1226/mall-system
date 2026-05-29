@@ -1,18 +1,81 @@
+/* ==========================================
+   Search Page — Matched from sams-mall-css.css
+   ========================================== */
+
 .search-page { min-height: 100vh; background: var(--color-bg); }
-.search-header { background: var(--color-white); padding: var(--spacing-sm) var(--spacing-lg); padding-top: calc(var(--spacing-sm) + env(safe-area-inset-top, 44px)); position: sticky; top: 0; z-index: 100; }
+
+.search-header {
+  background: white;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  padding-top: calc(var(--spacing-sm) + env(safe-area-inset-top, 44px));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
 .search-bar-row { display: flex; align-items: center; gap: var(--spacing-sm); }
-.search-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-.search-input-box { flex: 1; background: var(--color-bg); border-radius: 20px; padding: 8px 16px; }
+
+.search-back {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.search-input-box {
+  flex: 1;
+  background: var(--color-bg);
+  border-radius: 20px;
+  padding: 8px 16px;
+}
+
 .search-input { font-size: var(--font-base); width: 100%; background: transparent; }
 .search-btn { padding: 8px 12px; }
 .search-btn-text { color: var(--color-primary); font-size: var(--font-base); font-weight: bold; }
+
 .search-scroll { height: calc(100vh - 60px - env(safe-area-inset-top, 44px)); }
-.search-count { display: block; padding: var(--spacing-md) var(--spacing-lg); font-size: var(--font-sm); color: var(--color-text-hint); }
-.search-card { display: flex; gap: var(--spacing-md); padding: var(--spacing-md) var(--spacing-lg); background: var(--color-white); margin-bottom: 1px; }
-.search-card-img { width: 100px; height: 100px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--color-divider); }
+
+/* Search result count — matching old .search-result-count */
+.search-count {
+  display: block;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 13px;
+  color: var(--color-text-hint);
+}
+
+.search-card {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: white;
+  margin-bottom: 1px;
+}
+
+.search-card-img {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: var(--color-divider);
+}
+
 .search-card-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
 .search-card-name { font-size: var(--font-base); color: var(--color-text-primary); line-height: 1.4; }
 .search-card-bottom { display: flex; justify-content: space-between; align-items: center; }
-.search-card-price { font-size: var(--font-lg); color: var(--color-danger); font-weight: bold; }
+.search-card-price { font-size: var(--font-lg); color: var(--color-accent); font-weight: bold; }
 .search-card-soldout { font-size: var(--font-xs); color: var(--color-text-hint); }
-.search-add-btn { width: 26px; height: 26px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; }
+
+.search-add-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: none;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

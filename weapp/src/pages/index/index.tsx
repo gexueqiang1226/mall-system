@@ -223,13 +223,15 @@ export default class Index extends Component<{}, HomePageState> {
         </View>
 
         <ScrollView scrollY className="home-scroll">
-          {/* Banner Swiper */}
+          {/* Banner Swiper — matching old .banner-section */}
           <View className="banner-section">
-            <Swiper className="banner-swiper" indicatorDots autoplay interval={3000} circular indicatorColor="rgba(255,255,255,0.4)" indicatorActiveColor="#FFFFFF">
+            <Swiper className="banner-swiper" indicatorDots autoplay interval={3000} circular indicatorColor="rgba(255,255,255,0.5)" indicatorActiveColor="#FFFFFF">
               {banners.map((banner) => (
                 <SwiperItem key={banner.id}>
-                  <View className="banner-img" style={{ background: 'linear-gradient(135deg, #0056B3 0%, #2E7DD2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
-                    <Text style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold', textAlign: 'center' }}>{banner.title}</Text>
+                  <View className="banner-slide" style={{ background: 'linear-gradient(135deg, #0056B3 0%, #0078E7 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}>
+                    <View className="banner-text">
+                      <Text style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>{banner.title}</Text>
+                    </View>
                   </View>
                 </SwiperItem>
               ))}
@@ -349,15 +351,17 @@ export default class Index extends Component<{}, HomePageState> {
             </View>
           )}
 
-          {/* VIP Card */}
-          <View className="section-card vip-card" onClick={() => Taro.switchTab({ url: '/pages/user/index' })}>
+          {/* VIP Card — matching old .member-card structure */}
+          <View className="vip-card" onClick={() => Taro.switchTab({ url: '/pages/user/index' })}>
             <View className="vip-card-content">
-              <Text className="vip-icon">⭐</Text>
+              <View className="vip-icon">⭐</View>
               <View className="vip-info">
                 <Text className="vip-title">卓越会员</Text>
                 <Text className="vip-desc">享2%积分返利 · 专属优惠</Text>
               </View>
-              <Text className="vip-arrow">›</Text>
+              <View className="vip-btn">
+                <Text className="vip-btn-text">查看权益</Text>
+              </View>
             </View>
           </View>
 

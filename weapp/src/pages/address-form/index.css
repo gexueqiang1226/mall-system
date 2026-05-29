@@ -1,13 +1,71 @@
+/* ==========================================
+   Address Form — Matched from sams-mall-css.css
+   ========================================== */
+
 .addr-form-page { min-height: 100vh; background: var(--color-bg); }
-.af-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-lg); padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px)); background: var(--color-white); }
-.af-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+
+.af-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
+  background: white;
+}
+
+.af-back {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
 .af-title { font-size: var(--font-md); font-weight: bold; }
-.af-body { padding: var(--spacing-md); }
-.af-field { display: flex; align-items: center; background: var(--color-white); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); gap: var(--spacing-md); }
+
+/* Form — matching old .address-form */
+.af-body { padding: 12px; }
+
+.af-field {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: var(--spacing-sm);
+  gap: var(--spacing-md);
+  border: 1px solid #ddd;
+}
+
+.af-field:focus-within { border-color: var(--color-primary); }
+
 .af-label { font-size: var(--font-sm); color: var(--color-text-secondary); width: 60px; flex-shrink: 0; }
-.af-input { flex: 1; font-size: var(--font-base); background: transparent; }
-.af-default-row { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); background: var(--color-white); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); }
-.af-default-text { font-size: var(--font-base); color: var(--color-text-primary); }
-.af-submit { background: var(--color-primary); border-radius: var(--radius-md); padding: 14px; text-align: center; margin-top: var(--spacing-xl); }
+.af-input { flex: 1; font-size: var(--font-base); background: transparent; border: none; outline: none; }
+
+/* Default Switch — matching old .form-switch */
+.af-default-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.af-default-text { font-size: 14px; color: var(--color-text-primary); }
+
+/* Submit Button — matching old .form-submit */
+.af-submit {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 .af-submit.disabled { opacity: 0.6; }
-.af-submit-text { color: var(--color-white); font-size: var(--font-md); font-weight: bold; }
+.af-submit-text { color: white; font-size: var(--font-md); font-weight: bold; }

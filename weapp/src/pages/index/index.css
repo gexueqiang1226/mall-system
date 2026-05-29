@@ -1,5 +1,6 @@
 /* ==========================================
    Home Page — Sam's Club Style
+   Line-by-line matched from sams-mall-css.css
    ========================================== */
 
 .home-page {
@@ -9,22 +10,27 @@
   padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom));
 }
 
-/* Search Bar */
+/* ========== Header / Search Bar — matching old .header ========== */
 .search-bar {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--color-primary);
+  background: linear-gradient(135deg, #0056B3 0%, #0078E7 100%);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
 }
 
 .search-input-wrap {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  background: var(--color-white);
+  gap: 8px;
+  background: white;
   border-radius: 20px;
-  padding: 8px 16px;
+  padding: 8px 14px;
 }
 
 .search-placeholder {
@@ -32,199 +38,312 @@
   color: var(--color-text-hint);
 }
 
-/* Scroll Area */
+/* ========== Scroll Area — matching old .main-content ========== */
 .home-scroll {
   height: calc(100vh - 52px - var(--tabbar-height) - var(--safe-bottom));
+  padding-bottom: 20px;
 }
 
-/* Banner */
+/* ========== VIP / Member Card — matching old .member-card ========== */
+.vip-card {
+  margin: 12px 12px 0 !important;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 0 !important;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.vip-card-content {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+
+.vip-icon {
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vip-info {
+  flex: 1;
+}
+
+.vip-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.vip-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+}
+
+.vip-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.vip-btn-text {
+  color: #333;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* ========== Banner — matching old .banner-section ========== */
 .banner-section {
-  padding: var(--spacing-lg) var(--spacing-lg) 0;
+  margin: 12px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  height: 150px;
+  padding: 0 !important;
 }
 
 .banner-swiper {
   width: 100%;
-  height: 160px;
+  height: 150px;
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .banner-img {
   width: 100%;
-  height: 160px;
+  height: 150px;
   border-radius: var(--radius-lg);
 }
 
-/* Category Grid */
+/* ========== Category Grid — matching old .category-section ========== */
 .category-section {
-  padding: var(--spacing-xl) var(--spacing-lg);
+  margin: 12px !important;
+  background: white !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 16px 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
 }
 
 .category-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-xl) 0;
+  gap: 8px 0;
 }
 
 .category-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) 0;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
 }
 
 .category-icon-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-round);
-  background: #E3F2FD;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 28px;
+  background: var(--color-primary-light);
 }
 
 .category-name {
-  font-size: var(--font-xs);
+  font-size: 12px;
   color: var(--color-text-primary);
   font-weight: 500;
   text-align: center;
 }
 
-/* Flash Sale */
+/* ========== Section Card — matching old .section-card ========== */
+.flash-section {
+  margin: 12px !important;
+  background: white !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ========== Countdown — matching old .countdown ========== */
 .flash-title {
   font-size: var(--font-md);
   font-weight: bold;
   color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .countdown-wrap {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .countdown-num {
   background: var(--color-text-primary);
-  color: var(--color-white);
-  font-size: var(--font-xs);
+  color: white;
+  font-size: 12px;
   font-weight: bold;
-  padding: 2px 4px;
-  border-radius: 3px;
-  min-width: 22px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  min-width: 24px;
   text-align: center;
 }
 
 .countdown-sep {
-  font-size: var(--font-xs);
+  font-size: 12px;
   font-weight: bold;
   color: var(--color-text-primary);
-  margin: 0 1px;
 }
 
+/* ========== Flash / Seckill Scroll — matching old .seckill-scroll ========== */
 .flash-scroll {
-  white-space: nowrap;
-  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-/* Seckill Card */
+.flash-scroll::-webkit-scrollbar { display: none; }
+
+/* ========== Seckill Card — matching old .seckill-card ========== */
 .seckill-card {
-  display: inline-block;
-  width: 240px;
-  margin-right: var(--spacing-md);
-  vertical-align: top;
-  background: #FFF5F5;
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  width: 130px;
+  background: white;
+  border-radius: var(--radius-sm);
   overflow: hidden;
+  position: relative;
+  cursor: pointer;
 }
 
 .seckill-card-img {
-  width: 240px;
-  height: 120px;
+  width: 130px;
+  height: 130px;
   background: var(--color-divider);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
 }
 
 .seckill-card-body {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 8px;
+  text-align: center;
 }
 
 .seckill-card-name {
-  font-size: var(--font-sm);
+  font-size: 12px;
   color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 4px;
   display: block;
 }
 
 .seckill-card-prices {
   display: flex;
   align-items: baseline;
-  gap: var(--spacing-xs);
-  margin-top: 4px;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
 .seckill-card-seckill {
-  font-size: var(--font-lg);
+  font-size: 16px;
   font-weight: bold;
-  color: var(--color-danger);
+  color: #FF4757;
 }
 
 .seckill-card-original {
-  font-size: var(--font-xs);
+  font-size: 11px;
   color: var(--color-text-hint);
   text-decoration: line-through;
 }
 
+/* ========== Seckill Progress — matching old .seckill-progress-wrap ========== */
 .seckill-progress-wrap {
-  height: 6px;
-  background: #FFE0E0;
+  background: #ffe0e0;
   border-radius: 3px;
-  margin-top: 6px;
+  height: 6px;
   overflow: hidden;
+  position: relative;
 }
 
 .seckill-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #FF4D4F, #FF6B35);
+  background: linear-gradient(90deg, #FF4757, #FF6B81);
   border-radius: 3px;
+  transition: width 0.5s;
 }
 
 .seckill-progress-text {
   font-size: 10px;
-  color: var(--color-text-hint);
+  color: #FF4757;
   margin-top: 2px;
   display: block;
 }
 
+/* ========== Seckill Button — matching old .seckill-card-btn ========== */
 .seckill-card-btn {
-  margin-top: 6px;
-  background: linear-gradient(135deg, #FF4D4F, #FF6B35);
-  color: var(--color-white);
+  display: block;
+  width: 100%;
+  padding: 6px 0;
+  background: linear-gradient(135deg, #FF4757, #FF6B81);
+  color: white;
+  border: none;
   border-radius: 14px;
-  padding: 4px 16px;
-  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 6px;
 }
 
 .seckill-card-btn-text {
-  font-size: var(--font-xs);
-  color: var(--color-white);
+  font-size: 13px;
+  color: white;
   font-weight: bold;
 }
 
-/* Recommend Grid */
+/* ========== Recommend Grid — matching old .recommend-grid ========== */
 .recommend-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
-  padding: 0 var(--spacing-lg) var(--spacing-lg);
+  gap: 10px;
 }
 
 .recommend-card {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
+  background: white;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
 }
 
 .recommend-img-wrap {
@@ -233,46 +352,66 @@
 
 .recommend-img {
   width: 100%;
-  height: 170px;
+  height: 140px;
   background: var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
+.recommend-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Sold Out Badge — matching old .sold-out-badge */
 .sold-out-badge {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
+  background: #FF4757;
+  color: white;
+  font-size: 11px;
   padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  z-index: 5;
 }
 
 .sold-out-text {
-  font-size: var(--font-xs);
-  color: var(--color-white);
+  font-size: 11px;
+  color: white;
+  font-weight: bold;
 }
 
 .recommend-info {
-  padding: var(--spacing-md);
+  padding: 10px;
 }
 
 .recommend-name {
-  font-size: var(--font-base);
+  font-size: 13px;
   color: var(--color-text-primary);
   line-height: 1.4;
-  height: 40px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  white-space: normal;
+  overflow: hidden;
+  height: 36px;
 }
 
 .recommend-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--spacing-sm);
+  margin-top: 8px;
 }
 
 .recommend-price-wrap {
@@ -281,106 +420,91 @@
 }
 
 .recommend-price {
-  font-size: var(--font-sm);
-  color: var(--color-danger);
+  color: var(--color-accent);
   font-weight: bold;
+  font-size: 12px;
 }
 
 .recommend-price-val {
-  font-size: var(--font-xl);
-  color: var(--color-danger);
+  color: var(--color-accent);
   font-weight: bold;
+  font-size: 18px;
 }
 
+.recommend-original {
+  font-size: 11px;
+  color: var(--color-text-hint);
+  text-decoration: line-through;
+  margin-left: 4px;
+}
+
+/* Add Cart Button — matching old .add-cart */
 .add-cart-btn {
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-round);
+  border-radius: 50%;
   background: var(--color-primary);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 18px;
 }
 
-/* New Arrivals */
+/* ========== New Arrivals Scroll — matching old .new-arrivals-scroll ========== */
+.new-arrivals-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.new-arrivals-scroll::-webkit-scrollbar { display: none; }
+
 .new-arrival-card {
-  display: inline-block;
+  flex-shrink: 0;
   width: 110px;
-  margin-right: var(--spacing-md);
-  vertical-align: top;
+  text-align: center;
+  cursor: pointer;
 }
 
 .new-arrival-img {
   width: 110px;
   height: 110px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--color-divider);
+  overflow: hidden;
 }
 
 .new-arrival-name {
-  display: block;
-  font-size: var(--font-sm);
+  font-size: 12px;
   color: var(--color-text-primary);
-  margin-top: var(--spacing-xs);
+  margin-top: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
 }
 
 .new-arrival-price {
-  display: block;
-  font-size: var(--font-md);
+  font-size: 14px;
   font-weight: bold;
-  color: var(--color-danger);
-  margin-top: 2px;
-}
-
-/* VIP Card */
-.vip-card {
-  background: linear-gradient(135deg, #2c2c2c, #1a1a1a) !important;
-}
-
-.vip-card-content {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-lg);
-  gap: var(--spacing-md);
-}
-
-.vip-icon {
-  font-size: 32px;
-}
-
-.vip-info {
-  flex: 1;
-}
-
-.vip-title {
-  font-size: var(--font-md);
-  font-weight: bold;
-  color: #FFD700;
-  display: block;
-}
-
-.vip-desc {
-  font-size: var(--font-xs);
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-accent);
   margin-top: 2px;
   display: block;
 }
 
-.vip-arrow {
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-/* Footer */
+/* ========== Footer — matching old .footer ========== */
 .home-footer {
-  padding: var(--spacing-xxl) 0;
   text-align: center;
+  padding: 20px 0;
 }
 
 .footer-text {
-  font-size: var(--font-sm);
+  font-size: 12px;
   color: var(--color-text-hint);
 }

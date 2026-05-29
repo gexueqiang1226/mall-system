@@ -1,18 +1,96 @@
+/* ==========================================
+   Points Page — Matched from sams-mall-css.css
+   ========================================== */
+
 .points-page { min-height: 100vh; background: var(--color-bg); }
-.points-header-bar { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-lg); padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px)); background: var(--color-primary); }
-.points-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; }
-.points-page-title { font-size: var(--font-md); font-weight: bold; color: var(--color-white); }
+
+.points-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top, 44px));
+  background: var(--color-primary);
+}
+
+.points-back {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.points-page-title { font-size: var(--font-md); font-weight: bold; color: white; }
 .points-scroll { height: calc(100vh - 60px - env(safe-area-inset-top, 44px)); }
-.points-balance-card { background: var(--color-primary); padding: 30px var(--spacing-xl); text-align: center; }
-.points-balance-num { font-size: 42px; font-weight: bold; color: var(--color-white); display: block; }
-.points-balance-label { font-size: var(--font-sm); color: rgba(255,255,255,0.7); display: block; margin-top: 4px; }
-.exchange-list { padding: 0 var(--spacing-lg) var(--spacing-lg); }
-.exchange-btn { background: #FFF8E1; border: 1px solid #FFE082; border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); text-align: center; }
-.exchange-btn-text { font-size: var(--font-base); color: var(--color-warning); font-weight: bold; }
-.points-item { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--color-divider); }
+
+/* Balance Card — matching old .points-header-bg */
+.points-balance-card {
+  background: linear-gradient(135deg, #0056B3, #0088FF);
+  padding: 30px 20px;
+  color: white;
+  text-align: center;
+}
+
+.points-balance-num { font-size: 42px; font-weight: bold; color: white; display: block; }
+.points-balance-label { font-size: 14px; color: rgba(255, 255, 255, 0.9); display: block; margin-top: 4px; }
+
+/* Exchange List — matching old .points-exchange-grid */
+.exchange-list { padding: -16px var(--spacing-lg) 0; }
+
+.exchange-section {
+  margin: -16px 12px 0;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: var(--spacing-lg);
+}
+
+.exchange-section-title {
+  font-size: 15px;
+  font-weight: bold;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.exchange-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.exchange-btn {
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+
+.exchange-btn:hover { border-color: var(--color-primary); }
+
+.exchange-btn-text { font-size: 13px; color: var(--color-primary); font-weight: bold; }
+
+/* Points History — matching old .points-history-item */
+.points-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.points-item:last-child { border-bottom: none; }
+
 .points-item-info { flex: 1; }
-.points-item-type { font-size: var(--font-base); color: var(--color-text-primary); display: block; }
-.points-item-time { font-size: var(--font-xs); color: var(--color-text-hint); margin-top: 2px; display: block; }
-.points-item-val { font-size: var(--font-lg); font-weight: bold; }
-.points-item-val.plus { color: var(--color-success); }
-.points-item-val.minus { color: var(--color-danger); }
+.points-item-type { font-size: 14px; color: var(--color-text-primary); display: block; }
+.points-item-time { font-size: 12px; color: var(--color-text-hint); margin-top: 2px; display: block; }
+
+.points-item-val { font-size: 16px; font-weight: bold; }
+.points-item-val.plus { color: #52C41A; }
+.points-item-val.minus { color: var(--color-accent); }
