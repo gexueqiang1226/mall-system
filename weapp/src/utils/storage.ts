@@ -13,9 +13,9 @@ export function getStorage(key: string): any {
   // fallback: 直接读 localStorage
   try {
     const raw = localStorage.getItem(key)
-    if (raw === null) return ''
+    if (raw === null) return null
     try { return JSON.parse(raw) } catch { return raw }
-  } catch { return '' }
+  } catch { return null }
 }
 
 export function setStorage(key: string, value: any): void {
