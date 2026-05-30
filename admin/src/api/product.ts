@@ -33,3 +33,7 @@ export const onlineProduct = (id: number) => {
 export const offlineProduct = (id: number) => {
   return request.post(`/admin/api/products/${id}/offline`)
 }
+
+export const deleteProduct = (id: number) => {
+  return request.delete(`/admin/api/products/${id}`)
+}

@@ -32,12 +32,13 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="320">
+        <el-table-column label="操作" width="400">
           <template #default="{ row }">
             <el-button size="small" @click="onEdit(row)">编辑</el-button>
             <el-button size="small" type="success" v-if="row.isOnline !== 1" @click="onOnline(row)">上架</el-button>
             <el-button size="small" type="warning" v-else @click="onOffline(row)">下架</el-button>
             <el-button size="small" @click="openInventory(row)">库存</el-button>
+            <el-button size="small" type="danger" @click="onDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -134,6 +135,13 @@ const onInventoryOk = async () => {
 const onInventoryClose = () => {
   inventoryDialog.value.visible = false
   inventoryDialog.value.product = null
+}
+
+const onDelete = async (row: any) => {
+  await ElMessageBox.confirm(`确认删除商品「${row.productName}」？此操作不可恢复！`, '警告', { type: 'warning' })
+  await productApi.deleteProduct(row.id)
+  ElMessage.success('删除成功')
+  fetch()
 }
 </script>
 

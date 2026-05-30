@@ -53,6 +53,21 @@ const routes = [
         name: 'InventoryLog',
         component: () => import('@/views/inventory/InventoryLogList.vue'),
       },
+      {
+        path: 'user',
+        name: 'UserList',
+        component: () => import('@/views/user/UserList.vue'),
+      },
+      {
+        path: 'coupon',
+        name: 'CouponList',
+        component: () => import('@/views/coupon/CouponList.vue'),
+      },
+      {
+        path: 'review',
+        name: 'ReviewList',
+        component: () => import('@/views/review/ReviewList.vue'),
+      },
     ],
   },
 ]

@@ -28,6 +28,18 @@
           <template #title><span>库存管理</span></template>
           <el-menu-item index="/inventory-log">库存日志</el-menu-item>
         </el-sub-menu>
+        <el-sub-menu index="user-menu">
+          <template #title><span>用户管理</span></template>
+          <el-menu-item index="/user">用户列表</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="coupon-menu">
+          <template #title><span>优惠券管理</span></template>
+          <el-menu-item index="/coupon">优惠券列表</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="review-menu">
+          <template #title><span>评价管理</span></template>
+          <el-menu-item index="/review">评价列表</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
