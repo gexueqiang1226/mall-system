@@ -108,6 +108,15 @@ export default class OrderDetail extends Component<{}, State> {
     })
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { order, loading } = this.state
     if (loading) return <View className='loading-page'><Text>加载中...</Text></View>
@@ -120,6 +129,12 @@ export default class OrderDetail extends Component<{}, State> {
 
     return (
       <View className='order-detail-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>订单详情</Text>
+        </View>
         <ScrollView className='detail-scroll' scrollY>
           {/* 状态卡片 */}
           <View className='status-card'>

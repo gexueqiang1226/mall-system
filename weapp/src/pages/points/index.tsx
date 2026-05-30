@@ -63,11 +63,26 @@ export default class Points extends Component<{}, State> {
     }
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { balance, history, loading, hasMore } = this.state
 
     return (
       <View className='points-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>我的积分</Text>
+        </View>
         {/* 积分余额卡片 */}
         <View className='balance-card'>
           <Text className='balance-label'>我的积分</Text>

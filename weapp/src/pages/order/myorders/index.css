@@ -1,12 +1,12 @@
 page {
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .my-orders-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 /* Tab栏 */
@@ -106,7 +106,7 @@ page {
   width: 64px;
   height: 64px;
   border-radius: 8px;
-  background: #f5f5f5;
+  background: #f5f7fa;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -120,7 +120,7 @@ page {
   justify-content: space-between;
   align-items: center;
   padding-top: 10px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid #f5f7fa;
 }
 
 .order-items-count {

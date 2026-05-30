@@ -1,12 +1,12 @@
 page {
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .confirm-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .confirm-scroll {
@@ -172,7 +172,7 @@ page {
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f7fa;
 }
 
 .order-item:last-child {
@@ -337,7 +337,7 @@ page {
 
 .addr-option {
   padding: 14px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f7fa;
 }
 
 .addr-option.selected {
@@ -372,7 +372,7 @@ page {
 
 .coupon-option {
   padding: 12px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f7fa;
 }
 
 .coupon-option.selected {

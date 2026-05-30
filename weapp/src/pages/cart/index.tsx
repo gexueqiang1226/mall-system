@@ -136,12 +136,27 @@ export default class Cart extends Component<{}, State> {
     Taro.navigateTo({ url: `/pages/product/detail/index?id=${productId}` })
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { items, editMode, loading, userId } = this.state
 
     if (!userId) {
       return (
         <View className='cart-page'>
+          <View className='detail-nav-bar'>
+            <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+              <Text className='detail-back-icon'>‹</Text>
+            </View>
+            <Text className='detail-nav-title'>购物车</Text>
+          </View>
           <View className='cart-header'>
             <Text className='cart-title'>购物车</Text>
           </View>
@@ -159,6 +174,12 @@ export default class Cart extends Component<{}, State> {
     if (!loading && items.length === 0) {
       return (
         <View className='cart-page'>
+          <View className='detail-nav-bar'>
+            <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+              <Text className='detail-back-icon'>‹</Text>
+            </View>
+            <Text className='detail-nav-title'>购物车</Text>
+          </View>
           <View className='cart-header'>
             <Text className='cart-title'>购物车</Text>
           </View>
@@ -175,6 +196,12 @@ export default class Cart extends Component<{}, State> {
 
     return (
       <View className='cart-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>购物车</Text>
+        </View>
         {/* 标题栏 */}
         <View className='cart-header'>
           <Text className='cart-title'>购物车</Text>

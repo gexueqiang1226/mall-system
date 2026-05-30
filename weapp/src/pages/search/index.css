@@ -1,12 +1,12 @@
 page {
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .search-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 /* 搜索头部 */
@@ -90,7 +90,7 @@ page {
 
 .hot-tag {
   padding: 6px 14px;
-  background: #F5F5F5;
+  background: #f5f7fa;
   border-radius: 20px;
   font-size: 13px;
   color: #333;
@@ -121,7 +121,7 @@ page {
   align-items: center;
   gap: 8px;
   padding: 10px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f7fa;
 }
 
 .history-item:last-child {

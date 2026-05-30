@@ -1,12 +1,12 @@
 page {
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .favorites-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F5F5F5;
+  background: #f5f7fa;
 }
 
 .fav-scroll {

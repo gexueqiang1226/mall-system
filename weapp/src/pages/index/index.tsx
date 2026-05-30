@@ -181,6 +181,10 @@ export default class Index extends Component<{}, State> {
     Taro.navigateTo({ url })
   }
 
+  goProductList(tag: string) {
+    Taro.navigateTo({ url: `/pages/product/list/index?tag=${tag}` })
+  }
+
   render() {
     const { banners, categories, seckillProducts, recommendProducts, newProducts, guessProducts, countdown, refreshing } = this.state
 
@@ -251,7 +255,7 @@ export default class Index extends Component<{}, State> {
                   <Text className='countdown-block'>{countdown.s}</Text>
                 </View>
               </View>
-              <Text className='more-link'>更多 &gt;</Text>
+              <Text className='more-link' onClick={() => this.goProductList('seckill')}>更多 &gt;</Text>
             </View>
             <View className='seckill-scroll'>
               {seckillProducts.map(p => {
@@ -274,7 +278,7 @@ export default class Index extends Component<{}, State> {
           <View className='section-card'>
             <View className='section-header'>
               <Text className='section-title'>🔥 人气推荐</Text>
-              <Text className='more-link' onClick={() => this.goCategory()}>更多 &gt;</Text>
+              <Text className='more-link' onClick={() => this.goProductList('hot')}>更多 &gt;</Text>
             </View>
             <View className='horizontal-scroll'>
               {recommendProducts.map(p => (
@@ -291,7 +295,7 @@ export default class Index extends Component<{}, State> {
           <View className='section-card'>
             <View className='section-header'>
               <Text className='section-title'>✨ 新品首发</Text>
-              <Text className='more-link'>更多 &gt;</Text>
+              <Text className='more-link' onClick={() => this.goProductList('new')}>更多 &gt;</Text>
             </View>
             <View className='horizontal-scroll'>
               {newProducts.map(p => (

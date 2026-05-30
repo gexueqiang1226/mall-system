@@ -157,11 +157,26 @@ export default class OrderList extends Component<{}, State> {
     }
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { selectedAddress, addresses, coupons, selectedCoupon, pointsBalance, usePoints, items, remark, showAddressPicker, showCouponPicker, submitting } = this.state
 
     return (
       <View className='confirm-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>我的订单</Text>
+        </View>
         <ScrollView className='confirm-scroll' scrollY>
           {/* 收货地址 */}
           <View className='section-card address-card' onClick={() => this.setState({ showAddressPicker: true })}>

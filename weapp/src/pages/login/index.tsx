@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Input } from '@tarojs/components'
+import { setStorage } from '@/utils/storage'
 import api from '@/services/api'
 import './index.css'
 
@@ -47,11 +48,26 @@ export default class Login extends Component<{}, State> {
     }
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { username, password, showPwd, loading } = this.state
 
     return (
       <View className='auth-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>登录</Text>
+        </View>
         {/* Logo区 */}
         <View className='auth-logo-wrap'>
           <View className='auth-logo'>

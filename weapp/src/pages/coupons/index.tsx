@@ -188,11 +188,26 @@ export default class Coupons extends Component<{}, State> {
     }
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { coupons, activeTab, loading, hasMore } = this.state
 
     return (
       <View className='coupons-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>我的优惠券</Text>
+        </View>
         <View className='tab-bar'>
           {TABS.map((tab, i) => (
             <View

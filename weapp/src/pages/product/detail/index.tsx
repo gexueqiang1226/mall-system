@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
 import { getStorage } from '@/utils/storage'
-import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components'
+import { View, Text, Image, Swiper, SwiperItem, ScrollView, Video } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
 
@@ -10,6 +10,7 @@ interface Product {
   productName: string
   mainImage: string
   detailImages: string
+  videoUrl: string
   salePrice: number
   marketPrice: number
   description: string
@@ -103,6 +104,15 @@ export default class ProductDetail extends Component<{}, State> {
     const params = Taro.getCurrentInstance().router?.params || {}
     const id = Number(params.id)
     if (id) this.loadAll(id)
+  }
+
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
   }
 
   async loadAll(id: number) {
@@ -276,6 +286,15 @@ export default class ProductDetail extends Component<{}, State> {
     return imgs.filter(Boolean)
   }
 
+  getDetailImages(): string[] {
+    const { product } = this.state
+    if (!product) return []
+    try {
+      const detail = JSON.parse(product.detailImages || '[]')
+      return Array.isArray(detail) ? detail.filter(Boolean) : []
+    } catch { return [] }
+  }
+
   toggleReviews() {
     if (this.state.expandedReviews) {
       this.setState({ expandedReviews: false })
@@ -303,6 +322,7 @@ export default class ProductDetail extends Component<{}, State> {
   render() {
     const { product, reviews, allReviews, reviewStats, recommends, isFavorite, showSkuPanel, selectedSpecs, quantity, currentPrice, currentStock, loading, expandedReviews, loadingReviews } = this.state
     const images = this.getImages()
+    const detailImages = this.getDetailImages()
     const specGroups = this.getSpecGroups()
 
     if (loading) {
@@ -318,6 +338,14 @@ export default class ProductDetail extends Component<{}, State> {
 
     return (
       <View className='detail-page'>
+        {/* 顶部返回栏 */}
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>商品详情</Text>
+        </View>
+
         <ScrollView className='detail-scroll' scrollY>
           {/* 图片轮播 */}
           <View className='img-swiper-wrap'>
@@ -378,6 +406,27 @@ export default class ProductDetail extends Component<{}, State> {
               <Text className='sku-entry-label'>数量</Text>
               <Text className='sku-entry-val'>1</Text>
               <Text className='sku-arrow'>&gt;</Text>
+            </View>
+          )}
+
+          {/* 图文详情 */}
+          {(product.videoUrl || detailImages.length > 0) && (
+            <View className='section-card'>
+              <View className='section-header'>
+                <Text className='section-title'>图文详情</Text>
+              </View>
+              {product.videoUrl && (
+                <Video
+                  className='detail-video'
+                  src={product.videoUrl}
+                  controls
+                  showFullscreenBtn
+                  showPlayBtn
+                />
+              )}
+              {detailImages.map((img, i) => (
+                <Image key={i} className='detail-intro-img' src={img} mode='widthFix' />
+              ))}
             </View>
           )}
 

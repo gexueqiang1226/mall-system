@@ -58,12 +58,27 @@ export default class Profile extends Component<{}, State> {
     return (this.state.nickname || 'U').charAt(0).toUpperCase()
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   render() {
     const { nickname, phone, email, loading, saving } = this.state
     if (loading) return <View className='loading-page'><Text>加载中...</Text></View>
 
     return (
       <View className='profile-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>个人资料</Text>
+        </View>
         <ScrollView className='profile-scroll' scrollY>
           {/* 头像 */}
           <View className='avatar-section'>

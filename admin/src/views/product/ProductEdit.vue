@@ -19,6 +19,13 @@
       <el-form-item label="商品描述">
         <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入商品描述" />
       </el-form-item>
+      <el-form-item label="详情图片">
+        <el-input v-model="form.detailImages" type="textarea" :rows="4" placeholder="每行一个图片URL" />
+        <div style="color: #999; font-size: 12px; margin-top: 4px;">每行输入一个图片URL，用于商品详情展示</div>
+      </el-form-item>
+      <el-form-item label="视频URL">
+        <el-input v-model="form.videoUrl" placeholder="请输入视频URL（选填）" />
+      </el-form-item>
       <el-form-item label="售价" prop="salePrice">
         <el-input-number v-model="form.salePrice" :min="0" :precision="2" :step="1" />
       </el-form-item>
@@ -62,6 +69,8 @@ const form = reactive({
   categoryId: 0,
   mainImage: '',
   description: '',
+  detailImages: '',
+  videoUrl: '',
   salePrice: 0,
   marketPrice: 0,
   costPrice: 0,
@@ -84,6 +93,14 @@ const load = async (id: string) => {
     form.categoryId = p.categoryId || 0
     form.mainImage = p.mainImage || ''
     form.description = p.description || ''
+    // 将JSON数组转换为每行一个URL
+    try {
+      const imgs = JSON.parse(p.detailImages || '[]')
+      form.detailImages = Array.isArray(imgs) ? imgs.join('\n') : ''
+    } catch {
+      form.detailImages = ''
+    }
+    form.videoUrl = p.videoUrl || ''
     form.salePrice = p.salePrice || 0
     form.marketPrice = p.marketPrice || 0
     form.costPrice = p.costPrice || 0
@@ -104,10 +121,19 @@ const onSubmit = async () => {
   loading.value = true
   try {
     const id = (route.params as any).id
+    // 将每行URL转换为JSON数组
+    const detailImagesArray = form.detailImages
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean)
+    const submitData = {
+      ...form,
+      detailImages: JSON.stringify(detailImagesArray),
+    }
     if (id) {
-      await productApi.updateProduct(Number(id), { ...form })
+      await productApi.updateProduct(Number(id), submitData)
     } else {
-      await productApi.createProduct({ ...form })
+      await productApi.createProduct(submitData)
     }
     ElMessage.success('保存成功')
     router.push({ path: '/product' })

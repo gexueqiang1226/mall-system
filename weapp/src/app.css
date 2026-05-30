@@ -24,7 +24,7 @@ page {
   --color-warning-light: #FFF8E1;
 
   /* Neutral Colors */
-  --color-bg: #F5F5F5;
+  --color-bg: #f5f7fa;
   --color-white: #FFFFFF;
   --color-text-primary: #333333;
   --color-text-secondary: #666666;
@@ -376,7 +376,7 @@ page {
   --primary: #0056B3;
   --primary-light: #E3F2FD;
   --accent: #FF4D4F;
-  --bg: #F5F5F5;
+  --bg: #f5f7fa;
   --white: #FFFFFF;
   --text: #333333;
   --text-secondary: #666666;
