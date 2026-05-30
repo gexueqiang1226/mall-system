@@ -216,7 +216,7 @@ export default class Index extends Component<{}, State> {
               </View>
               <Text className='more-link'>更多 &gt;</Text>
             </View>
-            <ScrollView scrollX className='seckill-scroll'>
+            <View className='seckill-scroll'>
               {seckillProducts.map(p => {
                 const pct = Math.min(85, 30 + (p.soldCount || 0) % 55)
                 return (
@@ -230,7 +230,7 @@ export default class Index extends Component<{}, State> {
                   </View>
                 )
               })}
-            </ScrollView>
+            </View>
           </View>
 
           {/* 人气推荐 */}
@@ -239,7 +239,7 @@ export default class Index extends Component<{}, State> {
               <Text className='section-title'>🔥 人气推荐</Text>
               <Text className='more-link' onClick={() => this.goCategory()}>更多 &gt;</Text>
             </View>
-            <ScrollView scrollX className='horizontal-scroll'>
+            <View className='horizontal-scroll'>
               {recommendProducts.map(p => (
                 <View className='h-product-card' key={p.id} onClick={() => this.goProduct(p.id)}>
                   <Image className='h-product-img' src={p.mainImage} mode='aspectFill' />
@@ -247,7 +247,7 @@ export default class Index extends Component<{}, State> {
                   <Text className='h-product-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           </View>
 
           {/* 新品首发 */}
@@ -256,7 +256,7 @@ export default class Index extends Component<{}, State> {
               <Text className='section-title'>✨ 新品首发</Text>
               <Text className='more-link'>更多 &gt;</Text>
             </View>
-            <ScrollView scrollX className='horizontal-scroll'>
+            <View className='horizontal-scroll'>
               {newProducts.map(p => (
                 <View className='h-product-card' key={p.id} onClick={() => this.goProduct(p.id)}>
                   <View style={{ position: 'relative' }}>
@@ -267,7 +267,7 @@ export default class Index extends Component<{}, State> {
                   <Text className='h-product-price'>¥{Number(p.salePrice).toFixed(2)}</Text>
                 </View>
               ))}
-            </ScrollView>
+            </View>
           </View>
 
           {/* 猜你喜欢 */}
