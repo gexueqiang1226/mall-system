@@ -66,6 +66,16 @@ page {
   /* Tab Bar & Safe Area */
   --tabbar-height: 50px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Responsive page width: phone 430px, tablet/desktop 768px */
+  --page-max-width: 430px;
+}
+
+/* PC/Tablet: wider layout */
+@media (min-width: 768px) {
+  :root {
+    --page-max-width: 768px;
+  }
 }
 
 /* ========== Body — matching old CSS ========== */
@@ -75,7 +85,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
-  max-width: 430px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
@@ -83,7 +93,7 @@ body {
 
 /* Taro H5 app container — constrained to match old CSS */
 #app {
-  max-width: 430px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   position: relative;
   background: var(--color-bg);
@@ -381,7 +391,7 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
-  max-width: 430px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
@@ -535,7 +545,7 @@ body {
 .detail-section-title { font-size: 15px; font-weight: bold; color: var(--text); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 .detail-rule { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--divider); font-size: 14px; color: var(--text-secondary); }
 .detail-rule:last-child { border-bottom: none; }
-.detail-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; display: flex; align-items: center; border-top: 1px solid #eee; padding: 8px 16px; padding-bottom: calc(8px + var(--safe-bottom)); z-index: 100; gap: 12px; }
+.detail-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; display: flex; align-items: center; border-top: 1px solid #eee; padding: 8px 16px; padding-bottom: calc(8px + var(--safe-bottom)); z-index: 100; gap: 12px; }
 .detail-bottom-bar .fav-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; font-size: 10px; color: var(--text-secondary); cursor: pointer; padding: 4px 8px; }
 .detail-bottom-bar .fav-btn .fav-icon { font-size: 22px; }
 .detail-bottom-bar .fav-btn.active .fav-icon { color: var(--accent); }
@@ -585,7 +595,7 @@ body {
 .cart-empty-icon { font-size: 60px; opacity: 0.3; }
 .cart-empty-text { font-size: 15px; color: var(--text-hint); margin-top: 16px; }
 .cart-empty-btn { margin-top: 16px; background: var(--primary); color: white; border: none; padding: 10px 30px; border-radius: 20px; font-size: 14px; cursor: pointer; }
-.cart-footer { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--divider); z-index: 99; }
+.cart-footer { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--divider); z-index: 99; }
 .cart-footer-left { flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .cart-footer-price { color: var(--accent); font-size: 20px; font-weight: bold; }
 .cart-footer-btn { background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 20px; font-size: 15px; font-weight: bold; cursor: pointer; }
@@ -618,7 +628,7 @@ body {
 .order-points-value { font-size: 13px; color: var(--text-secondary); }
 .order-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: var(--text-secondary); }
 .order-summary-total { font-size: 14px; font-weight: bold; color: var(--text); }
-.order-footer { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--divider); z-index: 99; }
+.order-footer { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--divider); z-index: 99; }
 .order-footer-left { flex: 1; }
 .order-footer-total { font-size: 13px; color: var(--text-secondary); }
 .order-footer-price { color: var(--accent); font-size: 22px; font-weight: bold; }
@@ -740,7 +750,7 @@ body {
 
 /* ========== Review Modal ========== */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
-.modal-content { background: white; width: 100%; max-width: 430px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px; max-height: 80vh; overflow-y: auto; }
+.modal-content { background: white; width: 100%; max-width: var(--page-max-width); border-radius: var(--radius) var(--radius) 0 0; padding: 20px; max-height: 80vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .modal-title { font-size: 17px; font-weight: bold; }
 .modal-close { background: none; border: none; font-size: 24px; color: var(--text-hint); cursor: pointer; }
@@ -760,7 +770,7 @@ body {
 .footer { text-align: center; padding: 20px 0; font-size: 12px; color: var(--text-hint); }
 
 /* ========== Tab Bar ========== */
-.tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; display: flex; border-top: 1px solid #eee; padding-bottom: var(--safe-bottom); z-index: 100; }
+.tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; display: flex; border-top: 1px solid #eee; padding-bottom: var(--safe-bottom); z-index: 100; }
 .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; text-decoration: none; color: var(--text-hint); font-size: 10px; cursor: pointer; position: relative; }
 .tab-item.active { color: var(--primary); }
 .tab-icon { font-size: 20px; }
@@ -803,7 +813,7 @@ body {
 .coupon-use-btn { align-self: center; padding: 6px 14px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 12px; cursor: pointer; margin-right: 12px; white-space: nowrap; }
 
 /* Coupon Picker Modal */
-.coupon-picker { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; border-radius: var(--radius) var(--radius) 0 0; z-index: 250; max-height: 60vh; overflow-y: auto; }
+.coupon-picker { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; border-radius: var(--radius) var(--radius) 0 0; z-index: 250; max-height: 60vh; overflow-y: auto; }
 .coupon-picker-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--divider); position: sticky; top: 0; background: white; z-index: 1; }
 .coupon-picker-title { font-size: 16px; font-weight: bold; }
 .coupon-picker-close { background: none; border: none; font-size: 24px; color: var(--text-hint); cursor: pointer; }
@@ -885,7 +895,7 @@ body {
 /* ========== S2: SKU规格选择器 ========== */
 .sku-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 250; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .sku-overlay.show { opacity: 1; pointer-events: auto; }
-.sku-panel { background: white; width: 100%; max-width: 430px; border-radius: var(--radius) var(--radius) 0 0; max-height: 70vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s; }
+.sku-panel { background: white; width: 100%; max-width: var(--page-max-width); border-radius: var(--radius) var(--radius) 0 0; max-height: 70vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s; }
 .sku-overlay.show .sku-panel { transform: translateY(0); }
 .sku-header { display: flex; gap: 12px; padding: 16px; border-bottom: 1px solid var(--divider); position: sticky; top: 0; background: white; z-index: 1; }
 .sku-header-img { width: 100px; height: 100px; border-radius: var(--radius-sm); overflow: hidden; background: var(--divider); flex-shrink: 0; }
@@ -940,12 +950,12 @@ body {
 .order-timeline-time { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
 .order-timeline-item.done .order-timeline-status { color: var(--primary); }
 .order-timeline-item.pending .order-timeline-status { color: var(--text-hint); }
-.order-detail-actions { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; padding: 12px 16px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--divider); padding-bottom: calc(12px + var(--safe-bottom)); z-index: 99; }
+.order-detail-actions { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: var(--page-max-width); background: white; padding: 12px 16px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--divider); padding-bottom: calc(12px + var(--safe-bottom)); z-index: 99; }
 
 /* ========== S6: 分享功能 ========== */
 .share-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 250; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .share-overlay.show { opacity: 1; pointer-events: auto; }
-.share-panel { background: white; width: 100%; max-width: 430px; border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px; transform: translateY(100%); transition: transform 0.3s; }
+.share-panel { background: white; width: 100%; max-width: var(--page-max-width); border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px; transform: translateY(100%); transition: transform 0.3s; }
 .share-overlay.show .share-panel { transform: translateY(0); }
 .share-panel-title { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 20px; }
 .share-icons { display: flex; justify-content: space-around; margin-bottom: 16px; }
