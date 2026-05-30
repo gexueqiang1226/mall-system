@@ -62,10 +62,47 @@ export default class Index extends Component<{}, State> {
   componentDidMount() {
     this.loadData()
     this.startCountdown()
+    this.initHorizontalDrag()
   }
 
   componentWillUnmount() {
     if (this.countdownTimer) clearInterval(this.countdownTimer)
+  }
+
+  // 桌面端鼠标拖拽水平滚动支持
+  initHorizontalDrag() {
+    const addDrag = (selector: string) => {
+      const el = document.querySelector(selector) as HTMLElement | null
+      if (!el) return
+      let isDown = false, startX = 0, scrollLeft = 0, hasMoved = false
+      el.addEventListener('mousedown', e => {
+        isDown = true; hasMoved = false
+        startX = e.pageX - el.offsetLeft
+        scrollLeft = el.scrollLeft
+        el.style.cursor = 'grabbing'
+        e.preventDefault()
+      })
+      const stop = () => { isDown = false; el.style.cursor = '' }
+      el.addEventListener('mouseleave', stop)
+      el.addEventListener('mouseup', stop)
+      el.addEventListener('mousemove', e => {
+        if (!isDown) return
+        e.preventDefault()
+        const x = e.pageX - el.offsetLeft
+        const walk = (x - startX) * 1.5
+        if (Math.abs(walk) > 5) hasMoved = true
+        el.scrollLeft = scrollLeft - walk
+      })
+      // 阻止拖拽时触发点击
+      el.addEventListener('click', e => {
+        if (hasMoved) { e.stopPropagation(); e.preventDefault() }
+      }, true)
+    }
+    // 等DOM渲染完成后绑定
+    setTimeout(() => {
+      addDrag('.seckill-scroll')
+      addDrag('.horizontal-scroll')
+    }, 500)
   }
 
   startCountdown() {

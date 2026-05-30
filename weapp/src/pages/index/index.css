@@ -52,6 +52,7 @@ page {
   flex: 1;
   margin-top: 52px;
   height: calc(100vh - 52px);
+  touch-action: pan-y;
 }
 
 /* Banner */
@@ -177,6 +178,11 @@ page {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   touch-action: pan-x !important;
+  cursor: grab;
+}
+
+.seckill-scroll:active {
+  cursor: grabbing;
 }
 
 .seckill-scroll::-webkit-scrollbar {
@@ -239,6 +245,11 @@ page {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   touch-action: pan-x !important;
+  cursor: grab;
+}
+
+.horizontal-scroll:active {
+  cursor: grabbing;
 }
 
 .horizontal-scroll::-webkit-scrollbar {
