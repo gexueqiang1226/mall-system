@@ -15,6 +15,9 @@
         <el-sub-menu index="product-menu">
           <template #title><span>商品管理</span></template>
           <el-menu-item index="/product">商品列表</el-menu-item>
+          <el-menu-item index="/product/seckill">限时秒杀</el-menu-item>
+          <el-menu-item index="/product/new">新品首发</el-menu-item>
+          <el-menu-item index="/product/recommend">人气推荐</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="order-menu">
           <template #title><span>订单管理</span></template>

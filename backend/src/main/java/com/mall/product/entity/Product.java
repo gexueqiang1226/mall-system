@@ -29,6 +29,7 @@ public class Product implements Serializable {
     private String description;
     private String mainImage;
     private String detailImages;
+    private String videoUrl;
 
     private BigDecimal salePrice;
     private BigDecimal marketPrice;
@@ -46,6 +47,9 @@ public class Product implements Serializable {
 
     private Integer isRecommend;
     private Integer recommendWeight;
+
+    private Integer isNew;
+    private Integer isSeckill;
 
     private Integer status;
     private String auditRemark;

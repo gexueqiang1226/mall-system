@@ -41,6 +41,15 @@
       <el-form-item label="是否上架">
         <el-switch v-model="form.isOnline" :active-value="1" :inactive-value="0" />
       </el-form-item>
+      <el-form-item label="新品首发">
+        <el-switch v-model="form.isNew" :active-value="1" :inactive-value="0" />
+      </el-form-item>
+      <el-form-item label="限时秒杀">
+        <el-switch v-model="form.isSeckill" :active-value="1" :inactive-value="0" />
+      </el-form-item>
+      <el-form-item label="人气推荐">
+        <el-switch v-model="form.isRecommend" :active-value="1" :inactive-value="0" />
+      </el-form-item>
 
       <el-form-item>
         <el-button type="primary" @click="onSubmit" :loading="loading">保存</el-button>
@@ -76,6 +85,9 @@ const form = reactive({
   costPrice: 0,
   sellableStock: 0,
   isOnline: 0,
+  isNew: 0,
+  isSeckill: 0,
+  isRecommend: 0,
 })
 
 const rules = {
@@ -106,6 +118,9 @@ const load = async (id: string) => {
     form.costPrice = p.costPrice || 0
     form.sellableStock = p.sellableStock || 0
     form.isOnline = p.isOnline || 0
+    form.isNew = p.isNew || 0
+    form.isSeckill = p.isSeckill || 0
+    form.isRecommend = p.isRecommend || 0
   }
 }
 

@@ -63,11 +63,13 @@ public class ProductController {
                                        @RequestParam(required = false) Long categoryId,
                                        @RequestParam(required = false) String keyword,
                                        @RequestParam(required = false) String sortBy,
-                                       @RequestParam(required = false) String order) {
+                                       @RequestParam(required = false) String order,
+                                       @RequestParam(required = false) String tag) {
         Map<String, Object> params = new HashMap<>();
         params.put("isOnline", isOnline);
         params.put("categoryId", categoryId);
         params.put("keyword", keyword);
+        params.put("tag", tag);
         if (sortBy != null) params.put("sortBy", sortBy);
         if (order != null) params.put("order", order);
 

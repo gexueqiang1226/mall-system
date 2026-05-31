@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS mall_product (
     offline_time DATETIME COMMENT '下架时间',
     is_recommend TINYINT DEFAULT 0 COMMENT '是否推荐',
     recommend_weight INT DEFAULT 0 COMMENT '推荐权重',
+    is_new TINYINT DEFAULT 0 COMMENT '新品首发 0否1是',
+    is_seckill TINYINT DEFAULT 0 COMMENT '限时秒杀 0否1是',
     status TINYINT DEFAULT 0 COMMENT '状态(0草稿 1审核 2发布 3下架 4删除)',
     audit_remark VARCHAR(500) COMMENT '审核备注',
     can_return TINYINT DEFAULT 1 COMMENT '是否支持退货',

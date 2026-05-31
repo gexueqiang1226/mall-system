@@ -34,6 +34,21 @@ const routes = [
         component: () => import('@/views/product/ProductEdit.vue'),
       },
       {
+        path: 'product/seckill',
+        name: 'SeckillManage',
+        component: () => import('@/views/product/SeckillManage.vue'),
+      },
+      {
+        path: 'product/new',
+        name: 'NewManage',
+        component: () => import('@/views/product/NewManage.vue'),
+      },
+      {
+        path: 'product/recommend',
+        name: 'RecommendManage',
+        component: () => import('@/views/product/RecommendManage.vue'),
+      },
+      {
         path: 'order',
         name: 'OrderList',
         component: () => import('@/views/order/OrderList.vue'),

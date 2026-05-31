@@ -35,8 +35,11 @@ interface State {
   countdown: { h: string; m: string; s: string }
 }
 
-const CATEGORY_EMOJIS = ['📱', '👔', '💄', '🍔', '🏡', '📚', '🎮', '🎁']
-const CATEGORY_NAMES = ['手机数码', '服装服饰', '美妆护肤', '食品生鲜', '家居家装', '图书文娱', '游戏周边', '礼品特产']
+const CATEGORY_EMOJIS: Record<string, string> = {
+  '电子产品': '📱', '手机数码': '📱', '服装鞋帽': '👔', '服装服饰': '👔',
+  '美妆护肤': '💄', '食品饮料': '🍔', '食品生鲜': '🍔', '家居生活': '🏡',
+  '家居家装': '🏡', '图书文娱': '📚', '游戏周边': '🎮', '母婴亲子': '🎁',
+}
 
 export default class Index extends Component<{}, State> {
   countdownTimer: any = null
@@ -119,22 +122,26 @@ export default class Index extends Component<{}, State> {
   async loadData() {
     this.setState({ loading: true })
     try {
-      const [catRes, prodRes] = await Promise.all([
+      const [catRes, seckillRes, newRes, recommendRes] = await Promise.all([
         api.get('/categories'),
-        api.get('/products', { page: 1, size: 20, sortBy: 'soldCount', order: 'desc' }),
+        api.get('/products', { tag: 'seckill', page: 1, size: 6 }),
+        api.get('/products', { tag: 'new', page: 1, size: 6 }),
+        api.get('/products', { tag: 'recommend', page: 1, size: 8 }),
       ])
       const categories: Category[] = ((catRes?.data || []) as Category[])
         .filter(c => !c.parentId || c.parentId === 0)
         .slice(0, 8)
-      const products: Product[] = prodRes?.data?.items || []
+      const seckillProducts: Product[] = seckillRes?.data?.items || []
+      const newProducts: Product[] = newRes?.data?.items || []
+      const recommendProducts: Product[] = recommendRes?.data?.items || []
       this.setState({
         categories,
-        seckillProducts: products.slice(0, 6),
-        recommendProducts: products.slice(0, 8),
-        newProducts: products.slice(4, 10),
-        guessProducts: products.slice(0, 10),
+        seckillProducts,
+        recommendProducts,
+        newProducts,
+        guessProducts: recommendProducts.slice(0, 10),
         page: 1,
-        hasMore: products.length >= 10,
+        hasMore: recommendProducts.length >= 10,
         loading: false,
         refreshing: false,
       })
@@ -175,14 +182,14 @@ export default class Index extends Component<{}, State> {
   }
 
   goCategory(catId?: number) {
-    const url = catId
-      ? `/pages/product/list/index?categoryId=${catId}`
-      : '/pages/product/list/index'
-    Taro.navigateTo({ url })
+    // 用URL hash参数传递，分类页componentDidShow中解析
+    const hash = catId ? `#/pages/product/list/index?categoryId=${catId}` : '#/pages/product/list/index'
+    location.hash = hash
   }
 
   goProductList(tag: string) {
-    Taro.navigateTo({ url: `/pages/product/list/index?tag=${tag}` })
+    // 用URL hash传递tag参数
+    location.hash = `#/pages/product/list/index?tag=${tag}`
   }
 
   render() {
@@ -235,8 +242,8 @@ export default class Index extends Component<{}, State> {
                   key={i}
                   onClick={() => this.goCategory(cat?.id)}
                 >
-                  <View className='category-icon-circle'>{CATEGORY_EMOJIS[i]}</View>
-                  <Text className='category-label'>{cat?.name || CATEGORY_NAMES[i]}</Text>
+                  <View className='category-icon-circle'>{CATEGORY_EMOJIS[cat?.name] || '📦'}</View>
+                  <Text className='category-label'>{cat?.name || '其他'}</Text>
                 </View>
               ))}
             </View>

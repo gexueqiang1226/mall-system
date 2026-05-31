@@ -352,6 +352,9 @@ export default class ProductDetail extends Component<{}, State> {
             <Swiper
               className='img-swiper'
               circular
+              autoplay
+              interval={3000}
+              duration={500}
               onChange={e => this.setState({ imageIndex: e.detail.current })}
             >
               {images.map((img, i) => (

@@ -351,6 +351,7 @@ page {
   gap: 8px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 200;
 }
 
 .bottom-icon-btn {

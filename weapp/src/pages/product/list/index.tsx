@@ -33,6 +33,7 @@ interface State {
   hasMore: boolean
   loading: boolean
   keyword: string
+  tagFilter: string
 }
 
 export default class ProductList extends Component<{}, State> {
@@ -48,15 +49,48 @@ export default class ProductList extends Component<{}, State> {
     hasMore: true,
     loading: false,
     keyword: '',
+    tagFilter: '',
   }
 
   componentDidMount() {
+    this.loadPageData()
+  }
+
+  componentDidShow() {
+    this.loadPageData()
+  }
+
+  loadPageData() {
     const params = Taro.getCurrentInstance().router?.params || {}
-    const categoryId = params.categoryId ? Number(params.categoryId) : 0
+    const tag = params.tag || ''
+    const catId = params.categoryId ? Number(params.categoryId) : 0
     const keyword = params.keyword || ''
-    this.setState({ keyword }, () => {
-      this.loadCategories(categoryId)
+    this.setState({ keyword, tagFilter: tag }, () => {
+      if (tag) {
+        this.loadTagProducts(tag)
+      } else {
+        this.loadCategories(catId)
+      }
     })
+  }
+
+  loadTagProducts(tag: string) {
+    api.get('/products', { tag, page: 1, size: 20 }).then(res => {
+      const items: Product[] = (res as any)?.data?.items || []
+      this.setState({ products: items, hasMore: items.length >= 20, loading: false })
+    }).catch(() => this.setState({ loading: false }))
+  }
+
+  switchTag(tag: string) {
+    this.setState({ tagFilter: tag, selectedLeftId: 0, products: [], page: 1, loading: true })
+    if (tag) {
+      api.get('/products', { tag, page: 1, size: 20 }).then(res => {
+        const items: Product[] = (res as any)?.data?.items || []
+        this.setState({ products: items, hasMore: items.length >= 20, loading: false })
+      }).catch(() => this.setState({ loading: false }))
+    } else {
+      this.loadCategories()
+    }
   }
 
   async loadCategories(initCatId?: number) {
@@ -134,7 +168,7 @@ export default class ProductList extends Component<{}, State> {
   }
 
   render() {
-    const { leftCategories, subCategories, products, selectedLeftId, selectedSubId, sortBy, order, loading } = this.state
+    const { leftCategories, subCategories, products, selectedLeftId, selectedSubId, sortBy, order, loading, tagFilter } = this.state
 
     return (
       <View className='category-page'>
@@ -146,8 +180,24 @@ export default class ProductList extends Component<{}, State> {
           </View>
         </View>
 
+        <View className='tag-tab-bar'>
+          <View className={`tag-tab-item ${tagFilter === '' ? 'active' : ''}`} onClick={() => this.switchTag('')}>
+            <Text>全部分类</Text>
+          </View>
+          <View className={`tag-tab-item ${tagFilter === 'seckill' ? 'active' : ''}`} onClick={() => this.switchTag('seckill')}>
+            <Text>⚡ 限时秒杀</Text>
+          </View>
+          <View className={`tag-tab-item ${tagFilter === 'new' ? 'active' : ''}`} onClick={() => this.switchTag('new')}>
+            <Text>✨ 新品首发</Text>
+          </View>
+          <View className={`tag-tab-item ${tagFilter === 'recommend' ? 'active' : ''}`} onClick={() => this.switchTag('recommend')}>
+            <Text>🔥 人气推荐</Text>
+          </View>
+        </View>
+
         <View className='body-wrap'>
-          {/* 左侧分类 */}
+          {/* 左侧分类 - 仅在非标签筛选时显示 */}
+          {!tagFilter && (
           <ScrollView className='left-nav' scrollY>
             {leftCategories.map(cat => (
               <View
@@ -159,6 +209,7 @@ export default class ProductList extends Component<{}, State> {
               </View>
             ))}
           </ScrollView>
+          )}
 
           {/* 右侧内容 */}
           <View className='right-content'>
