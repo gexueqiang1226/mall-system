@@ -27,4 +27,12 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
                 .eq("product_id", productId);
         return this.count(wrapper) > 0;
     }
+
+    @Override
+    public boolean removeByUserAndProduct(Long userId, Long productId) {
+        QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
+                .eq("user_id", userId)
+                .eq("product_id", productId);
+        return this.remove(wrapper);
+    }
 }

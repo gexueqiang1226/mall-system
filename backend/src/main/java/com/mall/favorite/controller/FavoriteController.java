@@ -51,6 +51,16 @@ public class FavoriteController {
         return ResponseResult.success("取消收藏成功");
     }
 
+    // 根据userId+productId删除收藏（移动端用）
+    @DeleteMapping("/api/favorites")
+    public ResponseResult removeFavoriteByUserAndProduct(@RequestParam Long userId, @RequestParam Long productId) {
+        boolean ok = favoriteService.removeByUserAndProduct(userId, productId);
+        if (!ok) {
+            return ResponseResult.fail(404, "收藏不存在");
+        }
+        return ResponseResult.success("取消收藏成功");
+    }
+
     @GetMapping("/api/favorites/check")
     public ResponseResult checkFavorite(@RequestParam Long userId, @RequestParam Long productId) {
         boolean favorited = favoriteService.checkFavorite(userId, productId);
