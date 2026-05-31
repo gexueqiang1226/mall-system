@@ -8,7 +8,7 @@
 
       <el-table :data="categories" style="width: 100%">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="categoryName" label="分类名称" />
+        <el-table-column prop="name" label="分类名称" />
         <el-table-column prop="parentId" label="父分类ID" width="100">
           <template #default="{ row }">{{ row.parentId || '顶级' }}</template>
         </el-table-column>
@@ -102,7 +102,7 @@ const onCreate = () => {
 
 const onEdit = (row: any) => {
   editingId.value = row.id
-  form.categoryName = row.categoryName
+  form.categoryName = row.name || row.categoryName
   form.parentId = row.parentId
   form.sortOrder = row.sortOrder
   form.status = row.status

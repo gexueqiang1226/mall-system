@@ -22,6 +22,14 @@
         <el-table-column prop="id" label="ID" width="70" />
         <el-table-column prop="orderNo" label="订单号" width="200" />
         <el-table-column prop="userId" label="用户ID" width="80" />
+        <el-table-column label="商品" min-width="200">
+          <template #default="{ row }">
+            <div v-for="item in (row.orderItems || [])" :key="item.id" style="margin-bottom:2px">
+              <span style="color:#606266">[{{ item.productId }}]</span> {{ item.productName }} x{{ item.quantity }}
+            </div>
+            <span v-if="!row.orderItems || row.orderItems.length === 0" style="color:#999">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="totalAmount" label="金额" width="120">
           <template #default="{ row }">&yen;{{ row.totalAmount }}</template>
         </el-table-column>

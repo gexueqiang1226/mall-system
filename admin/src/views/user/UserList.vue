@@ -10,18 +10,16 @@
       </div>
 
       <el-table :data="users" style="width:100%">
-        <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="username" label="用户名" width="150" />
+        <el-table-column prop="userId" label="用户ID" width="80" />
+        <el-table-column prop="nickname" label="用户名" width="150" />
         <el-table-column prop="phone" label="手机号" width="130" />
         <el-table-column prop="email" label="邮箱" width="200" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column label="统计" width="200">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
-            </el-tag>
+            <span>订单:{{ row.totalOrders || 0 }} / 消费:¥{{ row.totalSpent || 0 }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
+        <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="200">
           <template #default="{ row }">
             <el-button size="small" @click="onView(row)">查看</el-button>

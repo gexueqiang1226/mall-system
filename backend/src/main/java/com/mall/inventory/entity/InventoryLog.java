@@ -33,4 +33,7 @@ public class InventoryLog implements Serializable {
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime operateTime;
+
+    @TableField(exist = false)
+    private String productName;
 }

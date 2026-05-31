@@ -241,7 +241,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 .eq(status != null, "status", status)
                 .like(orderNo != null && !orderNo.isEmpty(), "order_no", orderNo)
                 .orderByDesc("create_time");
-        return this.page(new Page<>(page, size), wrapper);
+        Page<Order> pager = this.page(new Page<>(page, size), wrapper);
+        // 加载每条订单的商品明细
+        for (Order order : pager.getRecords()) {
+            List<OrderItem> items = orderItemMapper.selectList(
+                    new QueryWrapper<OrderItem>().eq("order_id", order.getId()));
+            order.setOrderItems(items);
+        }
+        return pager;
     }
 
     @Override

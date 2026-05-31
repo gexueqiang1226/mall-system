@@ -11,7 +11,9 @@
 
       <el-table :data="logs" style="width: 100%">
         <el-table-column prop="id" label="ID" width="70" />
-        <el-table-column prop="productId" label="商品ID" width="80" />
+        <el-table-column label="商品" min-width="180">
+          <template #default="{ row }">{{ row.productName || '-' }}<span v-if="row.productName" style="color:#999;margin-left:4px">[ID:{{ row.productId }}]</span></template>
+        </el-table-column>
         <el-table-column prop="orderId" label="订单ID" width="80">
           <template #default="{ row }">{{ row.orderId || '-' }}</template>
         </el-table-column>
