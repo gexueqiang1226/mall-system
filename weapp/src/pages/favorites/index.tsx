@@ -59,11 +59,26 @@ export default class Favorites extends Component<{}, State> {
     Taro.navigateTo({ url: `/pages/product/detail/index?id=${productId}` })
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/user/index' })
+    }
+  }
+
   render() {
     const { favorites, loading } = this.state
 
     return (
       <View className='favorites-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>我的收藏</Text>
+        </View>
         <ScrollView className='fav-scroll' scrollY>
           {favorites.map(fav => (
             <View className='fav-item' key={fav.id} onClick={() => this.goProduct(fav.productId)}>

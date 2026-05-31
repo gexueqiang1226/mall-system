@@ -37,6 +37,8 @@ interface State {
 }
 
 export default class ProductList extends Component<{}, State> {
+  _onHashChange: (() => void) | null = null
+
   state: State = {
     leftCategories: [],
     subCategories: [],
@@ -54,17 +56,33 @@ export default class ProductList extends Component<{}, State> {
 
   componentDidMount() {
     this.loadPageData()
+    // 监听hash变化（首页通过location.hash跳转时触发）
+    this._onHashChange = () => this.loadPageData()
+    window.addEventListener('hashchange', this._onHashChange)
   }
 
   componentDidShow() {
     this.loadPageData()
   }
 
+  componentWillUnmount() {
+    if (this._onHashChange) {
+      window.removeEventListener('hashchange', this._onHashChange)
+    }
+  }
+
   loadPageData() {
-    const params = Taro.getCurrentInstance().router?.params || {}
-    const tag = params.tag || ''
-    const catId = params.categoryId ? Number(params.categoryId) : 0
-    const keyword = params.keyword || ''
+    // Taro router params在hash变化时可能不更新，直接从URL解析
+    const hash = location.hash || ''
+    const search = hash.split('?')[1] || ''
+    const urlParams: Record<string, string> = {}
+    search.split('&').forEach(pair => {
+      const [k, v] = pair.split('=')
+      if (k && v !== undefined) urlParams[k] = decodeURIComponent(v)
+    })
+    const tag = urlParams.tag || ''
+    const catId = urlParams.categoryId ? Number(urlParams.categoryId) : 0
+    const keyword = urlParams.keyword || ''
     this.setState({ keyword, tagFilter: tag }, () => {
       if (tag) {
         this.loadTagProducts(tag)

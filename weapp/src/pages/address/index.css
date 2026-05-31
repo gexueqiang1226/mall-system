@@ -12,6 +12,8 @@ page {
 .addr-scroll {
   flex: 1;
   height: calc(100vh - 70px);
+  padding-top: 54px;
+  box-sizing: border-box;
 }
 
 /* 地址卡片 */

@@ -11,6 +11,8 @@ page {
 
 .fav-scroll {
   height: 100vh;
+  padding-top: 54px;
+  box-sizing: border-box;
 }
 
 .fav-item {

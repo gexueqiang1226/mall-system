@@ -81,11 +81,26 @@ export default class AddressList extends Component<{}, State> {
     Taro.navigateTo({ url })
   }
 
+  goBack() {
+    const pages = Taro.getCurrentPages()
+    if (pages.length > 1) {
+      Taro.navigateBack()
+    } else {
+      Taro.switchTab({ url: '/pages/user/index' })
+    }
+  }
+
   render() {
     const { addresses, loading } = this.state
 
     return (
       <View className='address-page'>
+        <View className='detail-nav-bar'>
+          <View className='detail-back-btn' onClick={this.goBack.bind(this)}>
+            <Text className='detail-back-icon'>‹</Text>
+          </View>
+          <Text className='detail-nav-title'>地址管理</Text>
+        </View>
         <ScrollView className='addr-scroll' scrollY>
           {addresses.map(addr => (
             <View className='addr-card' key={addr.id}>
