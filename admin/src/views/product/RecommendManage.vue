@@ -62,7 +62,7 @@ const loadData = async () => {
       size: size.value,
       keyword: keyword.value,
     })
-    list.value = res.data.records || []
+    list.value = res.data.items || res.data.records || []
     total.value = res.data.total || 0
   } finally {
     loading.value = false
