@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage, setStorage, removeStorage } from '@/utils/storage'
+import { getStorage, setStorage, removeStorage, getUserId, normalizeUserInfo } from '@/utils/storage'
 import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -58,14 +58,15 @@ export default class UserPage extends Component<{}, State> {
   }
 
   async checkLogin() {
-    const userInfo = getStorage('USER_INFO')
+    const userId = getUserId()
     const token = getStorage('TOKEN')
-    if (!userInfo || !token) {
+    if (!userId || !token) {
       this.setState({ isLoggedIn: false, userInfo: null })
       return
     }
+    const userInfo = getStorage('USER_INFO')
     this.setState({ isLoggedIn: true, userInfo })
-    this.loadUserData(userInfo.id)
+    this.loadUserData(userId)
   }
 
   async loadUserData(userId: number) {
@@ -75,8 +76,9 @@ export default class UserPage extends Component<{}, State> {
       ])
       const profile = profileRes?.data
       if (profile) {
-        this.setState({ userInfo: profile })
-        setStorage('USER_INFO', profile)
+        const normalized = normalizeUserInfo(profile)
+        this.setState({ userInfo: normalized })
+        setStorage('USER_INFO', normalized)
       }
     } catch {}
   }

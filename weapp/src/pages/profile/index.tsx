@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage, setStorage, removeStorage } from '@/utils/storage'
+import { getStorage, setStorage, getUserId } from '@/utils/storage'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -25,9 +25,9 @@ export default class Profile extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const userInfo = getStorage('USER_INFO')
-    const userId = userInfo?.id || getStorage('USER_ID') || 0
+    const userId = getUserId()
     if (!userId) { Taro.navigateTo({ url: '/pages/login/index' }); return }
+    const userInfo = getStorage('USER_INFO')
     this.setState({
       userId,
       nickname: userInfo?.nickname || '',

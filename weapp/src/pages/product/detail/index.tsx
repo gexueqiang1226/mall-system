@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage } from '@/utils/storage'
+import { getUserId } from '@/utils/storage'
 import { View, Text, Image, Swiper, SwiperItem, ScrollView, Video } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -138,10 +138,11 @@ export default class ProductDetail extends Component<{}, State> {
       // 检查收藏
       let isFavorite = false
       try {
-        const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
+        const userId = getUserId()
         if (userId) {
           const favRes = await api.get('/favorites/check', { userId, productId: id })
-          isFavorite = favRes?.data?.isFavorite || false
+          // 兼容后端返回 favorited 或 isFavorite
+          isFavorite = favRes?.data?.favorited || favRes?.data?.isFavorite || false
         }
       } catch {}
 
@@ -214,10 +215,51 @@ export default class ProductDetail extends Component<{}, State> {
     this.setState({ showSkuPanel: false })
   }
 
+  // 检查是否有SKU规格需要选择
+  hasSkuSpecs(): boolean {
+    const specGroups = this.getSpecGroups()
+    return Object.keys(specGroups).length > 0
+  }
+
+  // 检查SKU规格是否已全部选择
+  hasRequiredSkuSelection(): boolean {
+    const specGroups = this.getSpecGroups()
+    const specKeys = Object.keys(specGroups)
+    if (specKeys.length === 0) return true // 无SKU，视为已选择
+    return specKeys.every(key => this.state.selectedSpecs[key])
+  }
+
+  // 底部栏"加入购物车"按钮点击
+  handleAddToCartClick() {
+    if (this.hasSkuSpecs()) {
+      // 有SKU规格，打开SKU面板
+      this.openSkuPanel('cart')
+    } else {
+      // 无SKU规格，直接加购
+      this.addToCart()
+    }
+  }
+
+  // 底部栏"立即购买"按钮点击
+  handleBuyNowClick() {
+    if (this.hasSkuSpecs()) {
+      // 有SKU规格，打开SKU面板
+      this.openSkuPanel('buy')
+    } else {
+      // 无SKU规格，直接购买
+      this.buyNow()
+    }
+  }
+
   async addToCart() {
-    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
+    const userId = getUserId()
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    // 如果有SKU规格，检查是否已全部选择
+    if (this.hasSkuSpecs() && !this.hasRequiredSkuSelection()) {
+      Taro.showToast({ title: '请选择规格', icon: 'none' })
       return
     }
     try {
@@ -235,9 +277,14 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   buyNow() {
-    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
+    const userId = getUserId()
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
+      return
+    }
+    // 如果有SKU规格，检查是否已全部选择
+    if (this.hasSkuSpecs() && !this.hasRequiredSkuSelection()) {
+      Taro.showToast({ title: '请选择规格', icon: 'none' })
       return
     }
     const { product, currentSkuId, quantity } = this.state
@@ -248,7 +295,7 @@ export default class ProductDetail extends Component<{}, State> {
   }
 
   async toggleFavorite() {
-    const userId = getStorage('USER_INFO')?.id || getStorage('USER_ID')
+    const userId = getUserId()
     if (!userId) {
       Taro.navigateTo({ url: '/pages/login/index' })
       return
@@ -500,10 +547,10 @@ export default class ProductDetail extends Component<{}, State> {
             <Text style={{ fontSize: '22px' }}>💬</Text>
             <Text className='bottom-icon-text'>客服</Text>
           </View>
-          <View className='bottom-btn cart-btn' onClick={() => this.openSkuPanel('cart')}>
+          <View className='bottom-btn cart-btn' onClick={this.handleAddToCartClick.bind(this)}>
             <Text>加入购物车</Text>
           </View>
-          <View className='bottom-btn buy-btn' onClick={() => this.openSkuPanel('buy')}>
+          <View className='bottom-btn buy-btn' onClick={this.handleBuyNowClick.bind(this)}>
             <Text>立即购买</Text>
           </View>
         </View>

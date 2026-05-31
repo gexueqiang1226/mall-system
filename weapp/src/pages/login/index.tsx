@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Input } from '@tarojs/components'
-import { setStorage } from '@/utils/storage'
+import { setStorage, normalizeUserInfo } from '@/utils/storage'
 import api from '@/services/api'
 import './index.css'
 
@@ -34,10 +34,18 @@ export default class Login extends Component<{}, State> {
     this.setState({ loading: true })
     try {
       const res = await api.post('/auth/login', { username: username.trim(), password })
-      const { token, user } = res?.data || {}
+      const data = res?.data || {}
+      // 兼容后端扁平返回：{ token, userId, username, ... } 或嵌套返回：{ token, user: {...} }
+      const user = normalizeUserInfo(data.user || data)
+      const token = data.token
+      if (!token || !user?.id) {
+        Taro.showToast({ title: '登录返回数据异常', icon: 'none' })
+        this.setState({ loading: false })
+        return
+      }
       setStorage('TOKEN', token)
       setStorage('USER_INFO', user)
-      setStorage('USER_ID', user?.id)
+      setStorage('USER_ID', user.id)
       Taro.showToast({ title: '登录成功', icon: 'success' })
       setTimeout(() => {
         Taro.switchTab({ url: '/pages/user/index' })

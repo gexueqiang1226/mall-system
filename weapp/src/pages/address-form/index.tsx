@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage } from '@/utils/storage'
+import { getUserId } from '@/utils/storage'
 import { View, Text, Input } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -33,8 +33,7 @@ export default class AddressForm extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const userInfo = getStorage('USER_INFO')
-    const userId = userInfo?.id || getStorage('USER_ID') || 0
+    const userId = getUserId()
     const params = Taro.getCurrentInstance().router?.params || {}
     const addrId = Number(params.id) || 0
     this.setState({ userId, addrId })

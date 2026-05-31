@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage } from '@/utils/storage'
+import { getUserId } from '@/utils/storage'
 import { View, Text, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -53,8 +53,7 @@ export default class Coupons extends Component<{}, State> {
   }
 
   componentDidMount() {
-    const userInfo = getStorage('USER_INFO')
-    const userId = userInfo?.id || getStorage('USER_ID') || 0
+    const userId = getUserId()
     this.setState({ userId }, () => { if (userId) this.loadCoupons(true) })
   }
 

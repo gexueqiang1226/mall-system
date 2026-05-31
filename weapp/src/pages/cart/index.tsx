@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
-import { getStorage, setStorage, removeStorage } from '@/utils/storage'
+import { getUserId, setStorage, removeStorage } from '@/utils/storage'
 import { View, Text, Image, ScrollView } from '@tarojs/components'
 import api from '@/services/api'
 import './index.css'
@@ -35,8 +35,7 @@ export default class Cart extends Component<{}, State> {
   }
 
   componentDidShow() {
-    const userInfo = getStorage('USER_INFO')
-    const userId = userInfo?.id || getStorage('USER_ID') || 0
+    const userId = getUserId()
     this.setState({ userId }, () => {
       if (userId) this.loadCart()
     })

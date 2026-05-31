@@ -21,6 +21,5 @@ public class Favorite {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    @TableLogic
     private Integer deleted;
 }

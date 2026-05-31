@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Input } from '@tarojs/components'
-import { setStorage } from '@/utils/storage'
+import { setStorage, normalizeUserInfo } from '@/utils/storage'
 import api from '@/services/api'
 import './index.css'
 
@@ -36,13 +36,28 @@ export default class Register extends Component<{}, State> {
     this.setState({ loading: true })
     try {
       const res = await api.post('/auth/register', { username: username.trim(), password, phone: phone.trim() })
-      const { token, user } = res?.data || {}
-      setStorage('TOKEN', token)
+      const data = res?.data || {}
+      // 兼容后端扁平返回：{ userId, username, ... } 或嵌套返回：{ token, user: {...} }
+      const user = normalizeUserInfo(data.user || data)
+      const token = data.token
+      if (!user?.id) {
+        Taro.showToast({ title: '注册返回数据异常', icon: 'none' })
+        this.setState({ loading: false })
+        return
+      }
+      // 如果后端返回了token，保存token；否则只保存用户信息后跳转登录或我的页
+      if (token) {
+        setStorage('TOKEN', token)
+      }
       setStorage('USER_INFO', user)
-      setStorage('USER_ID', user?.id)
+      setStorage('USER_ID', user.id)
       Taro.showToast({ title: '注册成功', icon: 'success' })
       setTimeout(() => {
-        Taro.switchTab({ url: '/pages/user/index' })
+        if (token) {
+          Taro.switchTab({ url: '/pages/user/index' })
+        } else {
+          Taro.navigateTo({ url: '/pages/login/index' })
+        }
       }, 800)
     } catch (e: any) {
       Taro.showToast({ title: e?.message || '注册失败', icon: 'none' })

@@ -1,5 +1,6 @@
 package com.mall.favorite.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.mall.favorite.entity.Favorite;
 import com.mall.favorite.service.FavoriteService;
 import com.mall.common.response.ResponseResult;
@@ -30,21 +31,43 @@ public class FavoriteController {
         if (userId == null || productId == null) {
             return ResponseResult.fail(400, "用户ID和商品ID不能为空");
         }
-        // 检查是否已收藏
+
+        // 检查是否已收藏（deleted=0）
         if (favoriteService.checkFavorite(userId, productId)) {
             return ResponseResult.fail(409, "已收藏该商品");
         }
-        Favorite favorite = Favorite.builder()
-                .userId(userId)
-                .productId(productId)
-                .build();
-        favoriteService.save(favorite);
-        return ResponseResult.success(favorite);
+
+        // 检查是否存在 deleted=1 的旧记录
+        QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
+                .eq("user_id", userId)
+                .eq("product_id", productId)
+                .eq("deleted", 1);
+        Favorite existingDeleted = favoriteService.getOne(wrapper);
+
+        if (existingDeleted != null) {
+            // 恢复旧记录：设置 deleted=0
+            existingDeleted.setDeleted(0);
+            favoriteService.updateById(existingDeleted);
+            return ResponseResult.success(existingDeleted);
+        } else {
+            // 正常插入新记录
+            Favorite favorite = Favorite.builder()
+                    .userId(userId)
+                    .productId(productId)
+                    .deleted(0)
+                    .build();
+            favoriteService.save(favorite);
+            return ResponseResult.success(favorite);
+        }
     }
 
     @DeleteMapping("/api/favorites/{id}")
     public ResponseResult removeFavorite(@PathVariable Long id) {
-        boolean ok = favoriteService.removeById(id);
+        // 只删除 deleted=0 的记录（物理删除）
+        QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
+                .eq("id", id)
+                .eq("deleted", 0);
+        boolean ok = favoriteService.remove(wrapper);
         if (!ok) {
             return ResponseResult.fail(404, "收藏不存在");
         }

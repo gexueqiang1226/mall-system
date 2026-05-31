@@ -16,6 +16,7 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     public List<Favorite> listByUserId(Long userId) {
         QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
                 .eq("user_id", userId)
+                .eq("deleted", 0)
                 .orderByDesc("create_time");
         return this.list(wrapper);
     }
@@ -24,7 +25,8 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     public boolean checkFavorite(Long userId, Long productId) {
         QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
                 .eq("user_id", userId)
-                .eq("product_id", productId);
+                .eq("product_id", productId)
+                .eq("deleted", 0);
         return this.count(wrapper) > 0;
     }
 
@@ -32,7 +34,9 @@ public class FavoriteServiceImpl extends ServiceImpl<FavoriteMapper, Favorite> i
     public boolean removeByUserAndProduct(Long userId, Long productId) {
         QueryWrapper<Favorite> wrapper = new QueryWrapper<Favorite>()
                 .eq("user_id", userId)
-                .eq("product_id", productId);
-        return this.remove(wrapper);
+                .eq("product_id", productId)
+                .eq("deleted", 0);
+        // 物理删除
+        return this.baseMapper.delete(wrapper) > 0;
     }
 }
