@@ -256,8 +256,8 @@ export default class ProductDetail extends Component<{}, State> {
     const { isFavorite, product } = this.state
     try {
       if (isFavorite) {
-        // 调用API取消收藏
-        await api.delete(`/favorites`, { data: { userId, productId: product?.id } })
+        // 移动端用query params
+        await api.delete(`/favorites?userId=${userId}&productId=${product?.id}`)
         Taro.showToast({ title: '已取消收藏', icon: 'success' })
       } else {
         await api.post('/favorites', { userId, productId: product?.id })
@@ -265,13 +265,7 @@ export default class ProductDetail extends Component<{}, State> {
       }
       this.setState({ isFavorite: !isFavorite })
     } catch (e: any) {
-      // 如果API返回404，优雅降级为纯前端提示
-      if (e?.response?.status === 404) {
-        Taro.showToast({ title: isFavorite ? '已取消收藏' : '收藏成功', icon: 'success' })
-        this.setState({ isFavorite: !isFavorite })
-      } else {
-        Taro.showToast({ title: '操作失败', icon: 'none' })
-      }
+      Taro.showToast({ title: '操作失败', icon: 'none' })
     }
   }
 

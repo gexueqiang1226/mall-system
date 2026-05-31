@@ -97,10 +97,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Map<String, Object> data = new HashMap<>();
         data.put("userId", user.getId());
         data.put("username", user.getUsername());
+        data.put("nickname", user.getUsername());
         data.put("avatar", user.getAvatar());
         data.put("email", user.getEmail());
         data.put("phone", user.getPhone());
         data.put("status", user.getStatus());
+        data.put("points", 0);
         data.put("createTime", user.getCreateTime());
         return data;
     }
