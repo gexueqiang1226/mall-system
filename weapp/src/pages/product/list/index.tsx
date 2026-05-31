@@ -139,13 +139,17 @@ export default class ProductList extends Component<{}, State> {
   }
 
   async loadProducts(reset = false) {
-    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword } = this.state
-    const catId = selectedSubId || selectedLeftId
+    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword, tagFilter } = this.state
     const nextPage = reset ? 1 : page + 1
     this.setState({ loading: true })
     try {
       const params: any = { page: nextPage, size: 20, order }
-      if (catId) params.categoryId = catId
+      if (tagFilter) {
+        params.tag = tagFilter
+      } else {
+        const catId = selectedSubId || selectedLeftId
+        if (catId) params.categoryId = catId
+      }
       if (keyword) params.keyword = keyword
       if (sortBy !== 'default') params.sortBy = sortBy
       const res = await api.get('/products', params)

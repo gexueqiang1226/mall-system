@@ -29,9 +29,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 String kw = "%" + params.get("keyword") + "%";
                 wrapper.and(w -> w.like("product_name", params.get("keyword")).or().like("product_code", params.get("keyword")));
             }
-            // 标签筛选
+            // 标签筛选（默认只返回上架商品）
             String tag = (String) params.get("tag");
             if (tag != null) {
+                wrapper.eq("is_online", 1);
                 if ("seckill".equals(tag)) {
                     wrapper.eq("is_seckill", 1);
                 } else if ("new".equals(tag)) {
