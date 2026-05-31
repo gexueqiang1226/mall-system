@@ -100,8 +100,9 @@ export default class ProductList extends Component<{}, State> {
   }
 
   switchTag(tag: string) {
-    this.setState({ tagFilter: tag, selectedLeftId: 0, products: [], page: 1, loading: true })
+    this.setState({ tagFilter: tag, selectedLeftId: 0, products: [], page: 1 })
     if (tag) {
+      this.setState({ loading: true })
       api.get('/products', { tag, page: 1, size: 20 }).then(res => {
         const items: Product[] = (res as any)?.data?.items || []
         this.setState({ products: items, hasMore: items.length >= 20, loading: false })
@@ -138,8 +139,7 @@ export default class ProductList extends Component<{}, State> {
   }
 
   async loadProducts(reset = false) {
-    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword, loading } = this.state
-    if (loading) return
+    const { selectedLeftId, selectedSubId, sortBy, order, page, keyword } = this.state
     const catId = selectedSubId || selectedLeftId
     const nextPage = reset ? 1 : page + 1
     this.setState({ loading: true })
